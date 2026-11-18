@@ -1,0 +1,32 @@
+include: package:flutter_lints/flutter.yaml
+
+# 关于 deprecated_member_use 的抑制，理由必须写清楚，否则后人会以为是掩盖问题：
+#
+# Flutter 3.47 起把 Material 从 SDK 拆成独立包 material_ui，并在
+# `package:flutter/material.dart` 上加了 @Deprecated。那个替代包的 pubspec 要求
+# flutter >= 3.47.0，而鸿蒙社区分叉（openharmony-sig/flutter_flutter）当前最高
+# 稳定线是 3.41.10，达不到这个门槛。
+#
+# 本项目目标平台包含鸿蒙，因此只能继续用 `package:flutter/material.dart`。
+# 这是在「支持鸿蒙」与「消除一条 info 级提示」之间的取舍：
+# 那条提示不影响编译与运行，而放弃鸿蒙会少一个目标平台。
+#
+# 等鸿蒙分叉升到 3.47+ 且稳定后，删掉此抑制、依赖切到 material_ui 即可。
+analyzer:
+  errors:
+    deprecated_member_use: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - prefer_single_quotes
+    - unawaited_futures

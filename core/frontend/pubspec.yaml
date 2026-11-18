@@ -1,0 +1,27 @@
+name: tapmc
+description: "TapMC 多端前端：覆盖 Android / iOS / Windows / macOS / Linux / Web / HarmonyOS。"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  # 下限取 Dart 3.8（Flutter 3.32 起）。为什么不用 ^3.14：
+  # 鸿蒙社区分叉（openharmony-sig/flutter_flutter）当前最高稳定线是
+  # 3.41.10-ohos-1.0.0，其 Dart 版本低于官方最新；把 SDK 下限抬高会让
+  # 鸿蒙端连 `flutter pub get` 都过不去，等于直接放弃这个平台。
+  sdk: ">=3.8.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # WebSocket 客户端。选它而非 dart:io 的 WebSocket：Web 端拿不到 dart:io，
+  # 而这个包在六端都有实现，是唯一能「一套代码跑全平台」的选择。
+  # 版本故意压在 3.0.x：它的 SDK 下限足够低，鸿蒙分叉也满足。
+  web_socket_channel: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

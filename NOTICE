@@ -1,0 +1,94 @@
+# NOTICE
+
+TapMC — 可模组化的多人沙盒游戏骨架
+Copyright (c) 2026 星玖工作室 Ntarstudio
+<https://www.ntars.cn/>
+
+本文件是本仓库的版权与第三方组件声明。修改或再分发前请先读本文件与仓库根
+[`LICENSE`](./LICENSE)。
+
+---
+
+## 一、本项目自身的许可
+
+| 范围 | 许可 |
+|---|---|
+| `core/backend/protocol/` `core/` `core/backend/mod/` `core/backend/server/` | Apache-2.0 |
+| `core/frontend/` `core/docs/` | MIT |
+| 品牌名称、Logo、界面设计 | 保留所有权利 |
+
+分层说明与理由见 [`LICENSE`](./LICENSE)。
+
+---
+
+## 二、后端依赖（Java / Gradle）
+
+| 组件 | 版本 | 版权方 | 许可证 | 用途 |
+|---|---|---|---|---|
+| Java-WebSocket | 1.6.0 | Nathan Rajlich 及贡献者 | MIT | WebSocket 服务端实现 |
+| slf4j-api | 2.0.17 | QOS.ch | MIT | 日志门面 |
+| slf4j-simple | 2.0.17 | QOS.ch | MIT | 日志实现（运行期） |
+| Gson | 2.15.0 | Google LLC | Apache-2.0 | JSON 序列化（协议层） |
+| JDK | 21+ | Oracle / OpenJDK 社区 | GPL-2.0 + Classpath Exception | 运行环境 |
+
+**关于 JDK**：以 GPLv2 + Classpath Exception 分发，Classpath Exception 明确允许
+闭源程序链接 JDK 类库、无需开源自身代码。这不构成对本项目宽松许可的污染。
+JDK 不随本仓库分发。
+
+选型说明：WebSocket 实现选 Java-WebSocket 而非 Jakarta WebSocket，是因为后者需要
+Servlet 容器（Tomcat / Jetty）。为了一个本地服务端起容器太重。
+
+---
+
+## 三、前端依赖（Flutter / Dart）
+
+| 组件 | 版本 | 版权方 | 许可证 | 用途 |
+|---|---|---|---|---|
+| Flutter SDK | 3.32+ | Google LLC | BSD-3-Clause | 多端框架 |
+| web_socket_channel | 3.0.3 | Dart 团队 | BSD-3-Clause | WebSocket 客户端 |
+| flutter_lints | ^5.0.0 | Flutter 团队 | BSD-3-Clause | 静态检查（开发期） |
+
+`web_socket_channel` 版本刻意压在 3.0.x：其 SDK 下限足够低，鸿蒙分叉也满足。
+选它而非 `dart:io` 的 WebSocket，是因为 Web 端拿不到 `dart:io`，
+而这个包在六端都有实现，是唯一能「一套代码跑全平台」的选择。
+
+依赖通过 `pub` 解析，落在系统缓存（`~/.pub-cache`），工程内不保留依赖副本。
+
+---
+
+## 四、许可证兼容性
+
+本项目采用 **Apache-2.0 与 MIT**（宽松许可）。
+
+| 许可证 | 与本项目的兼容性 |
+|---|---|
+| MIT / BSD / Apache-2.0 / ISC | **兼容**，可直接引入 |
+| 专有 / 无许可证 / 自定义限制条款 | **不兼容**，不得引入 |
+| GPL-2.0 / GPL-3.0 / LGPL / AGPL / MPL | **不兼容**，不得引入 |
+
+**特别提示**：Minecraft 生态中部分社区库使用 GPL 或自定义限制条款（如要求
+非商业使用、要求署名特定格式）。引入任何 Minecraft 相关依赖前，必须逐项核对
+其许可证原文，不得仅凭 README 描述判断。
+
+---
+
+## 五、明确没有使用的内容
+
+| 对象 | 权利方 | 说明 |
+|---|---|---|
+| Minecraft 游戏本体资源 | Mojang Studios / Microsoft | 未使用任何贴图、音效、模型或字体。本项目为独立实现的沙盒骨架，不含 Minecraft 资产 |
+| Minecraft 商标与名称 | Mojang Studios / Microsoft | 本项目不以 Minecraft 名义发布，不暗示官方关联 |
+
+---
+
+## 六、再分发要求
+
+使用或再分发本项目时，请一并保留：
+
+1. 本 NOTICE 文件；
+2. `LICENSES/Apache-2.0.txt` 与 `LICENSES/MIT.txt` 许可全文；
+3. 源文件中已有的版权与许可声明。
+
+---
+
+Ntarstudio（星玖工作室）· <https://www.ntars.cn/>

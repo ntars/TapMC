@@ -1,0 +1,45 @@
+# 根级 .gitignore
+#
+# 原则：只忽略「构建产物」与「本机私有文件」，不忽略任何源码、配置与文档。
+# 分平台/分语言的忽略规则已经写在各子项目的 .gitignore 里（frontend/、
+# frontend/android/ 等），这里只补根级需要、子项目覆盖不到的部分。
+
+# ---- 构建产物 ----
+backend/**/build/
+backend/.gradle/
+frontend/build/
+frontend/.dart_tool/
+
+# ---- 本机私有 ----
+# Gradle 用户级缓存与本机路径不应入库
+backend/local.properties
+backend/.kotlin/
+
+# ---- IDE ----
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+# 但保留 VS Code 的推荐扩展清单，它对团队有用
+!.vscode/extensions.json
+
+# ---- macOS ----
+.DS_Store
+._*
+# AppleDouble 与资源叉残留：拷贝/打包后常见，不属于数据本体
+.AppleDouble
+.LSOverride
+
+# ---- 日志与临时文件 ----
+*.log
+*.tmp
+*.swp
+*~
+
+# ---- HarmonyOS ----
+# ohos/ 目录由鸿蒙版 Flutter SDK 在本地生成（flutter create --platforms ohos .），
+# 依赖开发者本机的 SDK 版本，入库会导致不同机器的产物互相覆盖。
+# 生成与接入步骤见 frontend/docs/harmonyos.md。
+frontend/ohos/
+frontend/.ohos/

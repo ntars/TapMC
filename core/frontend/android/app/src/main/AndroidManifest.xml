@@ -1,0 +1,49 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 与游戏服务端通信需要网络。不声明的话 WebSocket 会直接抛 SecurityException，
+         表现为「能编译、能启动、一连接就崩」。 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- 用于判断网络是否可用，以便在离线时给出准确提示而不是干等超时。 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- usesCleartextTraffic：本地联调时后端跑在宿主机（模拟器为 10.0.2.2）的
+         明文 ws:// 地址上。Android 9 起默认禁止明文流量，不开这个开关会连不上。
+         正式发布若后端走 wss://，应把它改回 false 或删掉。 -->
+    <application
+        android:label="TapMC"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- 启动时先显示这个主题，Flutter UI 初始化完成后再切到 NormalTheme。 -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <!-- 不要删：Flutter 工具据此生成 GeneratedPluginRegistrant.java。 -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+
+    <!-- 包可见性声明：Flutter 引擎的 ProcessTextPlugin 需要查询能处理文本的 activity。 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>
