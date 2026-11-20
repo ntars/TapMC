@@ -403,8 +403,12 @@ Copyright © 2026 星玖工作室 Ntarstudio. Licensed under Apache-2.0 / MIT.
 | 路径 | 许可 |
 |---|---|
 | `core/backend/protocol/` `core/backend/core/` `core/backend/mod/` `core/backend/server/` | Apache-2.0 |
+| `core/backend/` 的 Gradle 包装器（`gradlew` `gradle/` `build.gradle.kts` 等） | Apache-2.0 |
 | `core/frontend/` `core/docs/` | MIT |
+| 根级 `README.md` `README_EN.md` `CHANGELOG.md` `CONTRIBUTING.md` `SECURITY.md` 等文档与配置 | MIT |
 | 品牌名称、Logo、界面设计 | 保留所有权利 |
+
+**默认归属**：上表未列出的本项目自研文件，一律适用根 `LICENSE`（Apache-2.0）。逐路径路由与再分发须保留的文件清单见 [LICENSING.md](./LICENSING.md)。
 
 全文见 [LICENSE](./LICENSE)（Apache-2.0）与 [LICENSE-MIT](./LICENSE-MIT)（MIT），分层说明见 [LICENSING.md](./LICENSING.md)。两种许可均无传染性：第三方模组与第三方客户端都可以闭源。
 

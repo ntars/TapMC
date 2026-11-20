@@ -10,6 +10,16 @@ Copyright (c) 2026 星玖工作室 Ntarstudio
 
 ---
 
+## 零、默认归属（先看这条）
+
+**下表未列出的、由本项目编写的文件，一律适用根 [`LICENSE`](./LICENSE)，即 Apache-2.0。**
+
+这条兜底规则是必须的。只列目录而不写默认值，克隆者面对 `core/` 下的
+Gradle 包装器、`pubspec.yaml`、`.gitignore` 就无从判断归属，法律上等于没有授权。
+需要相反结果的路径，必须显式写进下表——**不存在「靠猜」的路径**。
+
+第三方依赖不适用本兜底条款，见第五节。
+
 ## 一、分层映射
 
 | 路径 | 许可 | 说明 |
@@ -20,6 +30,8 @@ Copyright (c) 2026 星玖工作室 Ntarstudio
 | `core/backend/server/` | **Apache-2.0** | 服务进程与 WebSocket 端点 |
 | `core/frontend/` | **MIT** | Flutter 多端界面（七端） |
 | `core/docs/` | **MIT** | 架构与协议文档 |
+| `core/backend/` 下的 Gradle 包装器（`gradlew` `gradlew.bat` `gradle/` `build.gradle.kts` `settings.gradle.kts` `gradle.properties`） | **Apache-2.0** | 属后端构建的一部分，随其所在层 |
+| 根级 `README.md` `README_EN.md` `CHANGELOG.md` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` `.gitignore` | **MIT** | 说明文档与仓库配置 |
 | 品牌名称、Logo、界面设计 | **保留所有权利** | 不随代码许可授予 |
 
 ## 二、为什么协议层必须 Apache-2.0

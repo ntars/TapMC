@@ -13,11 +13,15 @@ Copyright (c) 2026 星玖工作室 Ntarstudio
 
 | 范围 | 许可 |
 |---|---|
-| `core/backend/protocol/` `core/` `core/backend/mod/` `core/backend/server/` | Apache-2.0 |
+| `core/backend/protocol/` `core/backend/core/` `core/backend/mod/` `core/backend/server/` | Apache-2.0 |
 | `core/frontend/` `core/docs/` | MIT |
 | 品牌名称、Logo、界面设计 | 保留所有权利 |
 
-分层说明与理由见 [`LICENSE`](./LICENSE)。
+分层说明与理由见 [`LICENSING.md`](./LICENSING.md)。
+
+> 旧版本此表把 `core/` 整体列为 Apache-2.0，与 `LICENSING.md` 的
+> `core/frontend/` MIT 直接冲突。此处按 LICENSING.md 更正：Apache-2.0 只覆盖
+> `core/backend/` 的四个子目录，前端与文档仍是 MIT。
 
 ---
 
@@ -86,7 +90,7 @@ Servlet 容器（Tomcat / Jetty）。为了一个本地服务端起容器太重�
 使用或再分发本项目时，请一并保留：
 
 1. 本 NOTICE 文件；
-2. `LICENSES/Apache-2.0.txt` 与 `LICENSES/MIT.txt` 许可全文；
+2. 根目录的 `LICENSE`（Apache-2.0 全文）与 `LICENSE-MIT`（MIT 全文）——本仓库没有 `LICENSES/` 目录；
 3. 源文件中已有的版权与许可声明。
 
 ---
