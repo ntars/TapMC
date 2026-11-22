@@ -41,6 +41,10 @@ class RpcClient {
   final Map<String, Completer<dynamic>> _pending = {};
   final StreamController<RpcEvent> _events =
       StreamController<RpcEvent>.broadcast();
+  // 连接断开单独成流：事件流是「服务端推来的报文」，而断连是传输层状态变化，
+  // 混在 events 里会让上层分不清「业务事件」和「连接没了」。
+  final StreamController<Object> _disconnections =
+      StreamController<Object>.broadcast();
 
   int _nextId = 0;
   StreamSubscription<String>? _subscription;
@@ -51,6 +55,9 @@ class RpcClient {
 
   /// 服务端主动推的事件流。
   Stream<RpcEvent> get events => _events.stream;
+
+  /// 连接意外断开时发出一次。主动 dispose() 不发。
+  Stream<Object> get disconnections => _disconnections.stream;
 
   /// 建立连接并开始接收。
   Future<void> connect() async {
@@ -65,12 +72,30 @@ class RpcClient {
         if (!_events.isClosed) {
           _events.addError(error);
         }
+        _notifyDisconnected(error);
       },
       onDone: () {
         _failAllPending(
             const TransportException('与服务端的连接已断开，请检查后端是否仍在运行'));
+        _notifyDisconnected(
+            const TransportException('与服务端的连接已断开，请检查后端是否仍在运行'));
       },
     );
+  }
+
+  /// 重连前把旧传输收干净，再走一次完整握手。
+  /// 上层会重新执行 hello → snapshot → join，因此世界状态与玩家身份都会恢复。
+  Future<void> reconnect() async {
+    await _transport.close();
+    await _subscription?.cancel();
+    _subscription = null;
+    await connect();
+  }
+
+  void _notifyDisconnected(Object error) {
+    if (!_disconnections.isClosed && !_disposed) {
+      _disconnections.add(error);
+    }
   }
 
   /// 调用一个方法。失败抛 [RpcException]（业务错误）或 [TransportException]（连接问题）。
@@ -192,5 +217,6 @@ class RpcClient {
     _failAllPending(const TransportException('客户端已关闭'));
     await _transport.close();
     await _events.close();
+    await _disconnections.close();
   }
 }

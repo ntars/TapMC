@@ -42,7 +42,7 @@ public final class RpcDispatcher {
     private static final Gson GSON = new GsonBuilder().create();
 
     private final GameEngine engine;
-    private final ModLoader modLoader;
+    private final java.util.function.Supplier<List<cn.ntars.tapmc.protocol.dto.ModInfo>> modReport;
     private final int width;
     private final int height;
 
@@ -53,8 +53,14 @@ public final class RpcDispatcher {
     private final AtomicLong sequence = new AtomicLong();
 
     public RpcDispatcher(GameEngine engine, ModLoader modLoader, int width, int height) {
+        this(engine, modLoader::report, width, height);
+    }
+
+    public RpcDispatcher(GameEngine engine,
+                         java.util.function.Supplier<List<cn.ntars.tapmc.protocol.dto.ModInfo>> modReport,
+                         int width, int height) {
         this.engine = engine;
-        this.modLoader = modLoader;
+        this.modReport = modReport;
         this.width = width;
         this.height = height;
     }
@@ -108,7 +114,7 @@ public final class RpcDispatcher {
     private Object dispatch(String method, RpcParams p) {
         return switch (method) {
             case Methods.SYSTEM_HELLO -> hello();
-            case Methods.SYSTEM_MODS -> modLoader.report();
+            case Methods.SYSTEM_MODS -> modReport.get();
             case Methods.WORLD_SNAPSHOT -> snapshot();
             case Methods.WORLD_GET_BLOCK -> getBlock(p);
             case Methods.WORLD_PLACE_BLOCK -> placeBlock(p);
@@ -166,9 +172,19 @@ public final class RpcDispatcher {
         BlockPos spawn = new BlockPos(width / 2, height / 2);
         Optional<PlayerState> state = engine.join(playerId, spawn);
         if (state.isEmpty()) {
+            // 没进成世界就不保留 id：下次 join 才可能找到已经腾出的可站立格。
+            playerId = null;
             throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "世界中没有可站立的位置，无法加入");
         }
         return state.get();
+    }
+
+    /** 连接关闭时释放玩家位。重复关闭安全。 */
+    public void onClose() {
+        if (playerId != null) {
+            engine.leave(playerId);
+            playerId = null;
+        }
     }
 
     private PlayerState move(RpcParams p) {

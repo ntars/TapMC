@@ -10,7 +10,7 @@ import '../domain/geometry.dart';
 import '../domain/models.dart';
 
 /// 连接状态。UI 据此决定画什么：加载态、错误态、还是游戏界面。
-enum ConnectionStatus { idle, connecting, ready, failed }
+enum ConnectionStatus { idle, connecting, ready, reconnecting, failed }
 
 /// 游戏会话状态。用 [ChangeNotifier] 而非引入状态管理库——
 /// 骨架阶段只有一个页面，多引一个依赖不值。
@@ -25,9 +25,11 @@ class GameSession extends ChangeNotifier {
   final GameRepository _repository;
   final RpcClient _rpc;
   StreamSubscription<WorldChange>? _subscription;
+  StreamSubscription<Object>? _disconnectSubscription;
 
   ConnectionStatus _status = ConnectionStatus.idle;
   String _errorMessage = '';
+  int _reconnectAttempt = 0;
   ServerInfo? _serverInfo;
   WorldSnapshot _world = WorldSnapshot.empty;
   PlayerState? _player;
@@ -37,6 +39,7 @@ class GameSession extends ChangeNotifier {
 
   ConnectionStatus get status => _status;
   String get errorMessage => _errorMessage;
+  int get reconnectAttempt => _reconnectAttempt;
   ServerInfo? get serverInfo => _serverInfo;
   WorldSnapshot get world => _world;
   PlayerState? get player => _player;
@@ -46,6 +49,36 @@ class GameSession extends ChangeNotifier {
 
   /// 是否已进入世界。没进入时移动与方块操作都会被后端拒绝，UI 应禁用入口。
   bool get isJoined => _player != null;
+
+  /// 自动重连是否在退避等待中。UI 用它显示「N 秒后重试」。
+  bool get isReconnectScheduled => _reconnectTimer?.isActive ?? false;
+
+  Timer? _reconnectTimer;
+
+  /// 连接断开后的回调。UI 只需订阅状态变化，所有重建逻辑都在这里。
+  void _handleDisconnect(Object error) {
+    if (_status == ConnectionStatus.failed || _status == ConnectionStatus.idle) {
+      return;
+    }
+    if (_reconnectAttempt >= 3) {
+      _status = ConnectionStatus.failed;
+      _errorMessage = '连续 3 次自动重连失败：$error。请检查后端后点「重试」。';
+      notifyListeners();
+      return;
+    }
+
+    _reconnectAttempt++;
+    _status = ConnectionStatus.reconnecting;
+    _errorMessage = error.toString();
+    // 500ms / 1s / 2s：短退避避免后端重启时把请求打满，也不让用户等太久。
+    final delay = Duration(milliseconds: 500 * (1 << (_reconnectAttempt - 1)));
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(delay, () {
+      _reconnectTimer = null;
+      unawaited(connect(isReconnect: true));
+    });
+    notifyListeners();
+  }
 
   /// 选择要放置的方块类型。
   void selectBlock(BlockType block) {
@@ -58,15 +91,21 @@ class GameSession extends ChangeNotifier {
   ///
   /// 四步串行而不是并行：snapshot 依赖 hello 拿到的尺寸做校验，
   /// join 需要地图已就绪才能算出合法出生点。
-  Future<void> connect() async {
+  Future<void> connect({bool isReconnect = false}) async {
     if (_status == ConnectionStatus.connecting) return;
+
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    if (!isReconnect) {
+      _reconnectAttempt = 0;
+    }
 
     _status = ConnectionStatus.connecting;
     _errorMessage = '';
     notifyListeners();
 
     try {
-      await _rpc.connect();
+      await _rpc.reconnect();
 
       _serverInfo = await _repository.hello();
       _world = await _repository.snapshot();
@@ -75,10 +114,14 @@ class GameSession extends ChangeNotifier {
 
       // 先订阅事件再置为 ready，避免「已连上但漏掉第一条广播」。
       _subscription ??= _repository.worldChanges.listen(_onWorldChange);
+      _disconnectSubscription ??=
+          _rpc.disconnections.listen(_handleDisconnect);
 
       _status = ConnectionStatus.ready;
+      _reconnectAttempt = 0;
       _lastAction = '已连接 ${_serverInfo?.serverName ?? ''}，'
-          '世界 ${_world.width}×${_world.height}';
+          '世界 ${_world.width}×${_world.height}'
+          '${isReconnect ? '（已自动重连并恢复世界）' : ''}';
     } on RpcException catch (error) {
       _status = ConnectionStatus.failed;
       _errorMessage = error.message;
@@ -166,8 +209,12 @@ class GameSession extends ChangeNotifier {
 
   @override
   void dispose() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
     _subscription?.cancel();
     _subscription = null;
+    _disconnectSubscription?.cancel();
+    _disconnectSubscription = null;
     super.dispose();
   }
 }

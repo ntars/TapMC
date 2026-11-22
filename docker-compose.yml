@@ -1,0 +1,23 @@
+services:
+  server:
+    build: .
+    image: tapmc:local
+    ports:
+      - "8777:8777"
+    volumes:
+      - tapmc-world:/data/world
+      - ./mods:/data/mods:ro
+    restart: unless-stopped
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./dist/web:/usr/share/nginx/html:ro
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  tapmc-world:

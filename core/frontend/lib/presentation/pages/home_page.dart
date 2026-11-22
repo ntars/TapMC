@@ -10,7 +10,8 @@ import '../widgets/world_grid.dart';
 /// 主页面。骨架阶段只有一个页面，因此不引入路由。
 ///
 /// 三块布局：顶部状态条（连接信息 + 最后一条操作反馈）、中部世界、右侧控制区。
-/// 窄屏（手机竖屏）时控制区移到世界下方，避免挤压地图。
+/// 窄屏竖屏（手机）时控制区移到世界下方；窄屏横屏时控制区退到右侧滚动栏，
+/// 避免把本就不足的垂直空间再切一刀，导致地图被挤成一条。
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.session});
 
@@ -41,7 +42,10 @@ class _HomePageState extends State<HomePage> {
             builder: (context, _) => Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Center(
-                child: _StatusChip(status: widget.session.status),
+                child: _StatusChip(
+                  status: widget.session.status,
+                  attempt: widget.session.reconnectAttempt,
+                ),
               ),
             ),
           ),
@@ -57,10 +61,14 @@ class _HomePageState extends State<HomePage> {
             return const _LoadingView();
           }
 
+          if (session.status == ConnectionStatus.reconnecting) {
+            return _ReconnectingView(attempt: session.reconnectAttempt);
+          }
+
           if (session.status == ConnectionStatus.failed) {
             return _ErrorView(
               message: session.errorMessage,
-              onRetry: session.connect,
+              onRetry: () => session.connect(),
             );
           }
 
@@ -71,10 +79,20 @@ class _HomePageState extends State<HomePage> {
               final controls = _ControlPane(session: session);
 
               if (isNarrow) {
+                if (constraints.maxWidth >= constraints.maxHeight) {
+                  // 横屏：宽度够放侧栏，高度宝贵，保持世界区完整高度。
+                  return Row(
+                    children: [
+                      Expanded(child: world),
+                      SizedBox(width: 240, child: controls),
+                    ],
+                  );
+                }
+                // 竖屏：地图优先，控制区在下方固定高度内滚动。
                 return Column(
                   children: [
                     Expanded(child: world),
-                    controls,
+                    SizedBox(height: 232, child: controls),
                   ],
                 );
               }
@@ -274,9 +292,10 @@ class _FeedbackBar extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.status});
+  const _StatusChip({required this.status, required this.attempt});
 
   final ConnectionStatus status;
+  final int attempt;
 
   @override
   Widget build(BuildContext context) {
@@ -285,6 +304,8 @@ class _StatusChip extends StatelessWidget {
       ConnectionStatus.idle => ('待连接', scheme.outline),
       ConnectionStatus.connecting => ('连接中', scheme.primary),
       ConnectionStatus.ready => ('已连接', const Color(0xFF2E7D32)),
+      ConnectionStatus.reconnecting =>
+        ('重连中 ${attempt > 0 ? '$attempt/3' : ''}', scheme.tertiary),
       ConnectionStatus.failed => ('连接失败', scheme.error),
     };
 
@@ -331,6 +352,36 @@ class _LoadingView extends StatelessWidget {
           ),
           SizedBox(height: 14),
           Text('正在连接游戏服务端…'),
+        ],
+      ),
+    );
+  }
+}
+
+/// 重连视图。明确告诉用户「后台正在做什么、第几次、失败后会怎样」。
+class _ReconnectingView extends StatelessWidget {
+  const _ReconnectingView({required this.attempt});
+
+  final int attempt;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
+          ),
+          const SizedBox(height: 14),
+          Text('连接已断开，正在重连 $attempt/3 …',
+              style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text('重连成功后会自动恢复完整世界与玩家位置。',
+              style: theme.textTheme.bodySmall),
         ],
       ),
     );

@@ -53,6 +53,19 @@ class GameEngineTest {
     }
 
     @Test
+    @DisplayName("重复加入是幂等的，不重置已移动的位置")
+    void rejoiningKeepsCurrentPosition() {
+        engine.join("p1", new BlockPos(2, 2));
+        engine.move("p1", MoveDirection.EAST);
+
+        var again = engine.join("p1", new BlockPos(2, 2));
+
+        assertTrue(again.isPresent());
+        assertEquals(new BlockPos(3, 2), again.get().getPos());
+        assertEquals(1, engine.players().size());
+    }
+
+    @Test
     @DisplayName("出生点不可通行时自动找第一个可站立格")
     void joinFallsBackWhenSpawnBlocked() {
         world.set(2, 2, BlockType.WATER);

@@ -223,6 +223,32 @@ class RpcDispatcherTest {
     }
 
     @Test
+    @DisplayName("同一连接重复 join 保持身份与当前位置")
+    void joinIsIdempotent() {
+        PlayerState first = GSON.fromJson(call(Methods.PLAYER_JOIN, null)
+                .getAsJsonObject("result"), PlayerState.class);
+        call(Methods.PLAYER_MOVE, "{\"direction\":\"NORTH\"}");
+
+        PlayerState second = GSON.fromJson(call(Methods.PLAYER_JOIN, null)
+                .getAsJsonObject("result"), PlayerState.class);
+
+        assertEquals(first.getId(), second.getId());
+        assertEquals(first.getPos().getX(), second.getPos().getX());
+        assertEquals(first.getPos().getY() - 1, second.getPos().getY());
+    }
+
+    @Test
+    @DisplayName("连接关闭后释放玩家位")
+    void closeReleasesPlayer() {
+        call(Methods.PLAYER_JOIN, null);
+        assertEquals(1, server.engine().players().size());
+
+        dispatcher.onClose();
+
+        assertEquals(0, server.engine().players().size());
+    }
+
+    @Test
     @DisplayName("非法方向返回参数错误")
     void unknownDirectionFails() {
         call(Methods.PLAYER_JOIN, null);

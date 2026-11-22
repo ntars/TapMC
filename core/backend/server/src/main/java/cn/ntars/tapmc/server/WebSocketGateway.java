@@ -65,7 +65,10 @@ public final class WebSocketGateway extends WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         ClientSession session = sessions.remove(conn);
-        dispatchers.remove(conn);
+        RpcDispatcher dispatcher = dispatchers.remove(conn);
+        if (dispatcher != null) {
+            dispatcher.onClose();
+        }
         if (session != null) {
             server.detach(session);
         }

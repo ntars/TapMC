@@ -2,6 +2,9 @@ package cn.ntars.tapmc.mod;
 
 import cn.ntars.tapmc.mod.event.BlockBreakListener;
 import cn.ntars.tapmc.mod.event.BlockPlaceListener;
+import cn.ntars.tapmc.mod.event.BlockBreakEvent;
+import cn.ntars.tapmc.mod.event.BlockPlaceEvent;
+import cn.ntars.tapmc.mod.event.PlayerMoveEvent;
 import cn.ntars.tapmc.mod.event.PlayerMoveListener;
 
 /**
@@ -44,4 +47,16 @@ public interface ModContext {
 
     /** 注册「玩家移动之后」的监听。 */
     void onPlayerMove(PlayerMoveListener listener);
+
+    /** 内部：把放置事件交给已注册的监听。引擎调用，模组实现者无需关心。 */
+    default void dispatchPlace(BlockPlaceEvent event) {
+    }
+
+    /** 内部：把破坏事件交给已注册的监听。引擎调用，模组实现者无需关心。 */
+    default void dispatchBreak(BlockBreakEvent event) {
+    }
+
+    /** 内部：把移动事件交给已注册的监听。引擎调用，模组实现者无需关心。 */
+    default void dispatchMove(PlayerMoveEvent event) {
+    }
 }

@@ -9,7 +9,7 @@
 [![GitHub license](https://img.shields.io/github/license/ntars/TapMC?style=flat-square)](./LICENSE)
 [![Backend](https://img.shields.io/badge/backend-Java%2021-ED8B00.svg?style=flat-square&logo=openjdk&logoColor=white)](./core/backend)
 [![Frontend](https://img.shields.io/badge/frontend-Flutter%203.32-02569B.svg?style=flat-square&logo=flutter&logoColor=white)](./core/frontend)
-[![Tests](https://img.shields.io/badge/tests-79%20passing-2ea44f.svg?style=flat-square)](#)
+[![Tests](https://img.shields.io/badge/tests-82%20backend%2B12%20frontend-2ea44f.svg?style=flat-square)](#)
 
 ---
 
@@ -40,7 +40,7 @@
 
 ### 2.2 要解决的问题
 
-**用一条可验证的边界，把「规则」和「呈现」彻底分开**，并且这条边界要能被第三方模组复用，而不是只服务于官方客户端。
+**用一条可验证的边界，把「规则」与「呈现」明确分开**，并且这条边界要能被第三方模组复用，而不是只服务于官方客户端。
 
 ### 2.3 核心思路
 
@@ -54,7 +54,7 @@
 
 ### 2.5 不适用场景
 
-- 想要开箱即玩的成品游戏：当前只有 24×16 的二维网格、五种方块、无存档、无鉴权；
+- 想要开箱即玩的成品游戏：当前只有 24×16 的二维网格、五种方块、无鉴权；
 - 需要三维世界、区块加载、光照与寻路：三维会同时牵动协议、渲染与寻路，属路线图最后一项；
 - 需要公网多人服务：当前是单进程串行处理，没有账号体系与反作弊。
 
@@ -69,10 +69,10 @@
 
 | 局限 | 影响范围 | 规避方式 |
 |---|---|---|
-| 无持久化 | 服务重启即重置地图 | 路线图第 1 项，`core` 加存档接口即可，协议不动 |
+| 无持久化 | ~~服务重启即重置地图~~ | 已解决：0.2.0 起默认写 `world.json`，重启逐格恢复 |
+| 存档不含玩家位置 | 重启后需重新加入，回到出生点 | 见 15.2，待定离线玩家语义 |
 | 无鉴权 | 连上即分配玩家 id，仅适合本机与可信局域网 | 默认只绑 `127.0.0.1`，对外暴露前须自行加网关 |
 | 单线程串行 | 并发连接数受限于单核处理能力 | 骨架阶段的正确性优先；扩展需在 `server` 层引入会话队列 |
-| 模组不能动态加载 | 新模组需重新编译启动 | 路线图第 2 项，`ModLoader` 加隔离类加载器 |
 | 二维世界 | 无高度、无区块、无光照 | 路线图第 4 项，影响面最大，刻意排最后 |
 
 ---
@@ -111,7 +111,7 @@ Android、iOS、Windows、macOS、Linux、Web、HarmonyOS 共用同一份业务�
 
 ### 4.2 内核零网络依赖
 
-`core` 模块不出现 JSON、网络、线程。带来的直接结果是整局游戏逻辑可以不起端口跑单元测试——`GameEngineTest` 的 22 个用例就是这么跑的，毫秒级完成。
+`core` 模块不出现 JSON、网络、线程。带来的直接结果是整局游戏逻辑可以不起端口跑单元测试——`GameEngineTest` 的 22 个用例即在无端口状态下完成。
 
 ### 4.3 模组隔离是编译期约束，不是口头约定
 
@@ -184,15 +184,59 @@ cd core/backend && ./gradlew :server:fatJar
 java -jar server/build/libs/server-0.1.0-all.jar --port 8777
 ```
 
-服务默认监听 `127.0.0.1:8777`。前端产物用 `flutter build <platform>` 生成，按各平台常规方式分发。
+服务默认监听 `127.0.0.1:8777`，并把世界存到启动目录下的 `world.json`。换路径或关掉存档：
+
+```bash
+java -jar server/build/libs/server-0.1.0-all.jar --save-file ~/.tapmc/world.json --autosave 30
+java -jar server/build/libs/server-0.1.0-all.jar --no-save          # 纯内存，退出即弃
+```
+
+前端产物用 `flutter build <platform>` 生成，按各平台常规方式分发。
 
 ### 7.4 升级与卸载
 
-骨架阶段无状态，升级即替换二进制或安装包；卸载删除目录即可，不写系统位置。
+升级即替换二进制或安装包；世界数据在 `world.json`，升级不会覆盖它（读档尺寸不符时才回退新地图）。
+卸载删除安装目录即可，不写系统位置；`world.json` 是玩家数据，按需自行保留或删除。
 
-### 7.5 容器化
+### 7.5 模组动态加载
 
-当前未提供镜像。服务端无外部依赖，`eclipse-temurin:21-jre` 基础镜像加一个 jar 即可，待有部署需求时补。
+把实现了 `cn.ntars.tapmc.mod.TapMcMod` SPI 的 jar 放到 `./mods/`，启动服务端即自动加载（仓库自带示例在 `examples/mods/`，复制过去才会生效）：
+
+```bash
+java -jar dist/server/server-0.1.0-all.jar --mods ./mods --no-save
+# 试跑示例：cp examples/mods/guard-mod.jar ./mods/
+```
+
+每个 jar 用独立子 `URLClassLoader` 加载，jar 内可自带同名依赖；卸载时关闭加载器释放文件句柄。
+`system.mods` 会列出动态模组与内置模组，状态为 `ACTIVE` / `FAILED` / `DISABLED`。
+实测：把 `examples/mods/guard-mod.jar` 复制进 `./mods/` 后，`system.mods` 出现 `test.guard`，放置 `WOOD` 返回 `-32004`（被模组拦下）；移走 jar 后不再拦截。示例默认不放在 `./mods/`，避免影响标准验收。
+注意：模组与服务端同进程运行，没有安全沙箱，只加载可信 jar。
+
+---
+
+
+### 7.6 容器化
+
+仓库提供 `Dockerfile` 与 `docker-compose.yml`：服务端在容器内监听 `0.0.0.0:8777`，
+存档与模组目录挂卷；Web 静态站点由 nginx 在 `8080` 端口提供。
+
+```bash
+./scripts/build_release.sh          # 先产出 dist/web 供 compose 挂载
+docker compose up -d --build
+curl http://127.0.0.1:8080/         # Web 产物
+# 服务端健康检查在容器内部每 30 秒执行一次，探测 127.0.0.1:8777
+docker compose ps                   # 观察 server 状态为 healthy
+```
+
+没有 Docker 时可用本地等价命令验证健康检查探针：
+
+```bash
+env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
+  bash -lc 'source scripts/env.sh; tapmc_env_init; ./scripts/health_verify.sh'
+```
+
+脚本起真实后端，分别断言运行中探针退出码 0、停止后退出码 1。
+健康检查只证明进程在监听端口，不替代握手与契约测试。
 
 ---
 
@@ -208,7 +252,7 @@ cd core/backend && ./gradlew :server:run
 cd core/frontend && flutter run -d chrome
 ```
 
-预期结果：浏览器出现 24×16 网格，能看到地形、能用方向键走动、能挖方块与放方块。关掉终端 2 再重连，状态条会从「已连接」变成「连接失败」并在几秒后重试。
+预期结果：浏览器出现 24×16 网格，能看到地形、能用方向键走动、能挖方块与放方块。后端短暂停止后前端会自动重连（500ms/1s/2s 退避，最多三次），成功后自动重放 hello → snapshot → mods → join 并恢复世界；三次失败后停在错误页，可手动点「重试」。Web 部署时可用 `?server=ws://host:port` 指定后端地址。
 
 真机联调时，服务端绑 `0.0.0.0`，前端指定主机：
 
@@ -216,6 +260,70 @@ cd core/frontend && flutter run -d chrome
 cd core/backend && ./gradlew :server:run --args="--host 0.0.0.0"
 cd core/frontend && flutter run --dart-define=TAPMC_SERVER_HOST=192.168.1.10
 ```
+
+### 8.1 一条命令自检
+
+不确定环境是否正常时，先跑冒烟脚本：它自己起后端、跑握手、起静态服务验 Web 产物，然后收干净进程。
+
+```bash
+./scripts/smoke.sh
+```
+
+预期输出（关键行）：
+
+```text
+[probe] system.hello OK  protocolVersion=1.0  world=24x16  blockTypes=5
+[probe] player.join OK  id=player-1-75416  pos=(12,8)
+[smoke] 通过  protocolVersion=1.0  日志：.../tmp/smoke
+```
+
+| 参数 | 作用 |
+|---|---|
+| `--no-web` | 只验后端，跳过 Web 产物检查 |
+| `--build-web` | 先跑 `flutter build web --release` 再验（首次约 1–3 分钟） |
+| `--expect-protocol 1.0` | 断言服务端协议版本，防两侧常量单边漂移 |
+| `--keep` | 结束后留下进程，便于人工连上去排查 |
+
+退出码：`0` 通过、`1` 断言失败、`2` 环境缺命令。失败时自动打印对应日志的最后 40 行，完整日志在 `tmp/smoke/`。
+
+脚本只依赖 `java` 与 `dart`：探针 `scripts/smoke/probe.dart` 只用 `dart:io`，不引第三方包，因此不必先 `pub get`。
+
+### 8.2 存档自检
+
+存档的实际行为（不只是单测）由另一个脚本验证：它开两次真实进程，中间隔一次 `SIGTERM` 与一次 `SIGKILL`。
+
+```bash
+./scripts/persist_verify.sh
+```
+
+预期输出（关键行）：
+
+```text
+[persist] 存档合法  24x16  blocks=384  bytes=3183
+[persist] 逐格一致  384 格全等  24x16
+[persist] SIGKILL 后仍有存档  24x16  blocks=384
+[persist] autosave 内容与内存一致  384 格
+[persist] 通过
+```
+
+三轮分别验三条路径：
+
+| 轮次 | 起停方式 | 验的是什么 |
+|---|---|---|
+| 第一轮 | `SIGTERM` | 退出钩子写盘；存档 JSON 结构合法 |
+| 第二轮 | 复用同一路径重启 | 读档生效，快照逐格等于第一轮 |
+| 第三轮 | `autosave=1s` 后 `SIGKILL` | 定时存档能在退出钩子失效时兜底 |
+
+退出码：`0` 通过、`1` 断言失败、`2` 环境缺命令。工作目录在 `tmp/persist/`（已 gitignore），不会碰真实的 `world.json`。
+
+### 8.3 发布构建与整体验收
+
+```bash
+./scripts/build_release.sh          # 产出 dist/server + dist/web + dist/SHA256SUMS
+./scripts/verify_release.sh         # 一条命令跑完 6 项验收
+```
+
+验收项：后端 82 个单测 → 前端 12 个单测 → 发布构建 → 协议冒烟 → 存档三轮端到端 → 前后端真实契约。`verify_release.sh --skip-e2e` 可在不便跑真实后端契约时跳过最后一项。发布目录可直接分发：`dist/server/server-0.1.0-all.jar` 用 `java -jar` 启动，`dist/web/` 是静态站点，`SHA256SUMS` 用于核对产物完整性。完整发布与部署说明见 [RELEASE.md](./RELEASE.md)。
 
 ---
 
@@ -225,11 +333,17 @@ cd core/frontend && flutter run --dart-define=TAPMC_SERVER_HOST=192.168.1.10
 |---|---|---|---|---|---|
 | `--host` | 字符串 | `127.0.0.1` | 否 | 合法 IPv4 / 主机名 | 服务端监听地址 |
 | `--port` | 整数 | `8777` | 否 | 1–65535 | 服务端监听端口 |
+| `--save-file` | 字符串 | `world.json` | 否 | 可写路径 | 存档文件路径（相对当前工作目录） |
+| `--save [路径]` | 布尔 + 可选路径 | 开启 | 否 | — | 显式开启存档，可顺带指定路径 |
+| `--no-save` | 布尔 | 关闭 | 否 | — | 关闭存档，世界只存在内存里 |
+| `--autosave` | 整数 | `60` | 否 | 0–86400（秒） | 定时存档周期；`0` 表示只在退出时存 |
 | `TAPMC_SERVER_HOST` | 字符串（编译期宏） | `127.0.0.1` | 否 | 合法 IPv4 / 主机名 | 前端连接的服务端地址，经 `--dart-define` 注入 |
 
 配置优先级：命令行参数 > 默认值；前端只有编译期宏一种来源，不读配置文件。
 
 热更新：协议与方法表支持热重载调试（Flutter 侧），服务端配置修改需重启进程。
+
+存档默认开启：不存档的版本一重启就抹掉玩家成果，作为可交付产品不合适，故默认写 `./world.json`（该文件已在 `.gitignore` 中）。一次性验证请传 `--no-save`。
 
 代理说明：`core/backend/gradle.properties` 与 `core/frontend/android/gradle.properties` 各有一段代理配置——Java 与 Gradle 都不读 `HTTPS_PROXY` 环境变量，必须显式写；无代理网络下注释掉即可。
 
@@ -275,12 +389,27 @@ cd core/frontend && flutter run --dart-define=TAPMC_SERVER_HOST=192.168.1.10
 ```text
 TapMC/
 ├── LICENSE / LICENSE-MIT / LICENSING.md / NOTICE
+├── scripts/
+│   ├── smoke.sh                 一键冒烟：起后端 + 握手探针 + Web 产物检查
+│   ├── macos_verify.sh          一键验 macOS 桌面端：构建 + 启动 + 断言 player.join
+│   ├── persist_verify.sh        一键验存档：退出写盘 + 重启恢复 + SIGKILL 定时保存
+│   ├── build_release.sh         一键发布构建：服务端 jar + Web 产物 + SHA256SUMS
+│   ├── verify_release.sh        一键整体验收：构建 + 测试 + 冒烟 + 存档 + 契约
+│   ├── env.sh                   构建环境引导：代理检测、Gradle/Flutter 路径归一
+│   ├── smoke/probe.dart         握手探针（零依赖，只用 dart:io）
+│   ├── persist/probe.dart       存档探针：改世界并导出快照用于逐格比对
+│   └── macos_verify/
+│       ├── relay.dart           透明中转探针：转发并记录每条 JSON-RPC 报文
+│       └── reject_server.dart   失败路径探针：握手后立刻断开，验应用不崩
 └── core/
     ├── backend/                 Java 服务进程（四模块）
     │   ├── protocol/            线协议：报文、错误码、方法名、DTO
     │   ├── mod/                 模组 SPI：TapMcMod、ModContext、事件
     │   ├── core/                游戏本体：世界、玩家、规则、模组加载
+    │   │   └── storage/         存档接口（WorldStore / StorageException），不绑格式
     │   └── server/              网关：WebSocket、RPC 分发、广播
+    │       ├── storage/         JSON 存档实现：原子写入 + 坏档隔离
+    │       └── SaveDaemon.java  定时存档线程（按 revision 判断是否真需要写）
     ├── frontend/                Flutter 多端应用（七端）
     │   ├── lib/domain/          纯数据模型与常量
     │   ├── lib/data/            RPC 客户端、传输层、仓储
@@ -299,11 +428,27 @@ TapMC/
 | 场景 | 结果 | 条件 |
 |---|---|---|
 | Web 构建 | 13.2 s | `flutter build web --release` |
+| macOS 构建 | 31 s（增量）/ 40.6 MB 产物 | `flutter build macos --release`，Xcode 27 |
+| macOS 启动 | 四步握手 72 ms | `./scripts/macos_verify.sh --no-build`，从 `CLIENT_CONNECTED` 到 `JOIN_OK` |
 | Android 构建 | 12.9 s | 移除 `ndkVersion` 声明后，`flutter build apk --debug` |
 | Android 首次构建 | 24 min | 其中绝大部分为 NDK r28c（约 2.8 GB）下载 |
-| 后端测试 | 61 个用例全通过 | `./gradlew build` |
+| 后端测试 | 84 个用例全通过 | `./gradlew clean build --no-daemon` |
+| 前端测试 | 14 通过 / 8 跳过 | `flutter test`；含两种窄屏尺寸的布局断言，跳过项是需真实后端的 e2e |
+| 存档写入 | 3183 字节（JSON，24×16=384 格） | `./scripts/persist_verify.sh` |
+| 存档重启恢复 | 384 格逐格一致，三轮验证 < 25 s | 同上；含退出钩子与 SIGKILL 定时存档两条路径 |
 
-运行期性能（帧率、并发连接数、内存占用）**尚未做基准测试**，不给出估算数字。骨架阶段的数据量（24×16 格、单进程串行）不构成性能瓶颈。
+实测运行期基准（Apple Silicon arm64 / macOS 27，`./scripts/bench.sh`，单连接 200 次 + 10 并发 × 40 次）：
+
+| 指标 | 结果 | 条件 |
+|---|---|---|
+| 单连接往返 P50 | 0.224 ms | `world.getBlock`，连接预热后 200 次 |
+| 单连接往返 P95 | 0.402 ms | 同上 |
+| 10 并发错误率 | 0.00%（400/400 完成） | 每连接 40 次；每 5 次掺一次 `world.snapshot` |
+| 服务端 RSS | 平均 85.0 MB，峰值 86.3 MB | 基准期间 0.2s 采样，共 26 次 |
+
+基准使用临时端口与 `--no-save`，不覆盖玩家存档；完整机器可读结果在 `tmp/bench/result.json`。这些数字是本机基线，不是 SLA。
+
+窄屏布局已用 widget 测试实测：375×667 竖屏时控制区在世界下方，667×375 横屏时控制区退到右侧 240px 滚动栏；两种尺寸下方向键与网格无重叠、无 RenderFlex overflow。命令：`cd core/frontend && flutter test test/home_page_layout_test.dart`。这是尺寸与几何断言，不是逐像素 golden。
 
 ---
 
@@ -311,7 +456,7 @@ TapMC/
 
 - **无鉴权**：连接即分配玩家 id，没有账号体系，也没有令牌。
 - **默认只绑本机**：服务端默认监听 `127.0.0.1`，不对局域网广播；真机联调需显式 `--host 0.0.0.0`，此时同一网段内任何人可连接。
-- **无持久化**：不写磁盘，不保存玩家数据，进程退出即无痕迹。
+- **存档为明文 JSON**：世界内容写在本机 `world.json`，不含任何玩家凭据；文件权限继承进程 umask，多人共用机器时需自行收紧目录权限。
 - **无遥测**：不上报任何统计，不请求外部接口。
 - **模组边界**：模组在服务端进程内运行，属于受信任代码，不是安全沙箱；加载不可信模组前需自行评估。
 
@@ -323,15 +468,44 @@ TapMC/
 
 | 平台 | 编译 | 运行 | 说明 |
 |---|---|---|---|
-| Web | 通过 | 通过 | `flutter build web --release` 实测 |
-| Android | 通过 | 待验 | 产出 142 MB debug APK，包名与权限已校验 |
-| macOS | 待验 | 待验 | entitlements 已配 `network.client` |
-| iOS | 待验 | 待验 | ATS 已配本地网络 |
-| Linux | 待验 | 待验 | 需 Linux 宿主构建 |
-| Windows | 待验 | 待验 | 需 Windows 宿主构建 |
-| HarmonyOS | 待验 | 待验 | 需鸿蒙版 Flutter SDK，见 [`core/frontend/docs/harmonyos.md`](./core/frontend/docs/harmonyos.md) |
+| Web | 通过 | 通过 | `flutter build web --release` 本轮退出码 0、11.5 s；冒烟脚本校验静态产物可访问 |
+| Android | 历史通过 | 待验 | 早期 `flutter build apk --debug` 产出 142 MB APK；本轮 Android Gradle 发行包 URL 网络不可达，无法重验 |
+| macOS | 历史通过 | 历史通过 | 早期 `flutter build macos --release` 产出 40.6 MB `.app` 并实跑完成握手；本轮本机只有 Command Line Tools、缺 Xcode，`flutter build macos` 报 `Xcode not installed` |
+| iOS | 待验 | 待验 | `flutter build ios --release` 报 `Xcode not installed`；ATS 已配本地网络 |
+| Linux | 待验 | 待验 | `flutter build linux --release` 报 `only supported on Linux hosts`，本机为 macOS |
+| Windows | 待验 | 待验 | `flutter build windows --release` 报 `only supported on Windows hosts`，本机为 macOS |
+| HarmonyOS | 待验 | 待验 | 需鸿蒙版 Flutter SDK，见 [`core/frontend/docs/harmonyos.md`](./core/frontend/docs/harmonyos.md)；本机未安装 |
 
-「待验」表示代码与平台配置已就位、缺的是构建环境，不写成通过。运行环境要求：JDK 21+、Flutter 3.32+。
+「待验」表示代码与平台配置已就位、缺的是构建环境，不写成通过。本轮逐端探测命令统一为 `cd core/frontend && flutter build <platform> --release`，原始输出见各端验收结论；运行环境要求：JDK 21+、Flutter 3.32+。
+
+macOS 端的构建与运行可一条命令复现（自动起后端、架中转探针、启动 `.app`、断言 `player.join` 已落地）：
+
+```bash
+./scripts/macos_verify.sh              # 含构建，约 1 分钟
+./scripts/macos_verify.sh --no-build   # 复用已有产物，约 15 秒
+```
+
+预期输出（关键行）：
+
+```text
+[macos] 产物：.../Release/TapMC.app（39M）
+[macos] 报文轨迹：
+  C>S req id=0 method=system.hello
+  S>C hello protocolVersion=1.0 world=24x16
+  S>C snapshot 24x16 blocks=384
+  C>S req id=3 method=player.join
+  JOIN_OK JOIN_RESULT id=player-1-78125 pos={x: 12, y: 8}
+[macos] 通过  ...
+```
+
+| 参数 | 作用 |
+|---|---|
+| `--no-build` | 跳过 `flutter build macos`，直接验已有产物 |
+| `--app <path>` | 指定待验的 `.app` 路径 |
+| `--timeout <秒>` | 等 `player.join` 的上限，默认 90 |
+| `--keep` | 结束后留下进程，便于人工连上去排查 |
+
+退出码：`0` 通过、`1` 断言失败、`2` 环境缺命令、`3` 端口 8777 已被占用（此时验出来的结果可能来自旧进程，直接判失败）。
 
 ---
 
@@ -341,17 +515,20 @@ TapMC/
 
 | 问题 | 影响范围 | 临时规避 | 跟踪 |
 |---|---|---|---|
-| 无存档 | 重启即重置地图 | 无 | 路线图第 1 项 |
+| 存档为整份快照 | 每次写盘重写 384 格；世界变大后写入开销线性上升 | 24×16 下实测约 3 ms，暂无影响 | 需要时改增量存档 |
+| 存档不带玩家位置 | 重启后玩家需重新 `player.join`，位置回到出生点 | 手动走回去 | 0.2.x 计划中 |
+| 重连最多三次 | 连续断线三次后停止自动重连 | 点错误页的「重试」重新走完整首屏加载 | 三次后转人工，避免无限重试 |
 | 无鉴权 | 仅适合本机与可信局域网 | 不对外暴露端口 | 路线图第 2 项（随动态加载一并设计） |
 | 单线程串行 | 高并发下延迟上升 | 限制连接数 | 未排期 |
-| 模组不可动态加载 | 新增模组需重新编译启动 | 在代码中注册 | 路线图第 2 项 |
+
 
 ### 15.2 未实现功能
 
 | 功能 | 未实现原因 | 计划状态 |
 |---|---|---|
-| 持久化存档 | 需要先定存档格式与恢复语义 | 计划中 |
-| 模组动态加载 | 需要类加载器隔离与安全边界 | 计划中 |
+| 玩家位置持久化 | 需要先定「离线玩家」的语义（是否保留位、是否被占格挡住） | 计划中 |
+| 多存档槽 / 世界命名 | 单机场景暂无需求 | 未排期 |
+
 | 三维世界 | 同时牵动协议、渲染与寻路 | 计划中（最后） |
 | 玩家生命值、背包、朝向 | 骨架阶段只需坐标 | 未排期 |
 | 多人同屏验证 | 需要多端构建环境 | 未排期 |
@@ -377,8 +554,8 @@ TapMC/
 
 | 计划项 | 目标版本 | 状态 |
 |---|---|---|
-| 持久化存档（`core` 加接口，`server` 读写） | 0.2.0 | 计划中 |
-| 模组动态加载（隔离类加载器 + 安全边界） | 0.3.0 | 计划中 |
+| 持久化存档（`core` 加接口，`server` 读写） | 0.2.0 | 已完成：JSON 存档 + 退出/定时双路径 + 坏档隔离 |
+| 模组动态加载（隔离类加载器 + 目录扫描） | 0.3.0 | 已实现，见 7.5；安全沙箱仍未实现 |
 | 补齐各端构建验证（Xcode / Windows / Linux / 鸿蒙） | 0.2.x | 计划中 |
 | 三维世界（协议加 `z`、等距渲染、寻路） | 1.0.0 | 计划中 |
 

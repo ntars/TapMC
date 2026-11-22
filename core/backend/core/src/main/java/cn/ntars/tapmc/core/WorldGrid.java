@@ -78,6 +78,35 @@ public final class WorldGrid {
         return java.util.List.copyOf(names);
     }
 
+    /**
+     * 从按行优先排列的名字列表还原世界，用于读档。
+     *
+     * <p>这里刻意做严格校验而不是「跳过坏格」：存档是自家写的，长度对不上或出现
+     * 未知方块名只有两种可能——文件被外部改坏了，或者版本不兼容。两种情况都应该
+     * 让上层明确知道「这份档不能用」（走回退到新地图的路径），而不是悄悄载入一张
+     * 缺了几格的地图让人以为存档正常。
+     *
+     * @throws IllegalArgumentException 长度与尺寸不符，或含未知方块名
+     */
+    public static WorldGrid fromBlockNames(int width, int height, java.util.List<String> names) {
+        WorldGrid world = new WorldGrid(width, height);
+        if (names == null || names.size() != world.blocks.length) {
+            throw new IllegalArgumentException("方块数量 " + (names == null ? "null" : names.size())
+                    + " 与尺寸 " + width + "x" + height + "（应为 " + world.blocks.length + "）不符");
+        }
+        for (int i = 0; i < names.size(); i++) {
+            String name = names.get(i);
+            BlockType type;
+            try {
+                type = BlockType.valueOf(name);
+            } catch (IllegalArgumentException | NullPointerException e) {
+                throw new IllegalArgumentException("第 " + i + " 格是未知方块：" + name);
+            }
+            world.blocks[i] = type;
+        }
+        return world;
+    }
+
     /** 归档一张「全空气」世界。 */
     public static WorldGrid empty(int width, int height) {
         return new WorldGrid(width, height);

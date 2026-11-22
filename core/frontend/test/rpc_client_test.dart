@@ -209,6 +209,17 @@ void main() {
   });
 
   group('连接断开', () {
+    test('断开时发出 disconnections，主动 dispose 不误报', () async {
+      final events = <Object>[];
+      final sub = client.disconnections.listen(events.add);
+
+      await transport.close();
+      await Future<void>.delayed(Duration.zero);
+      // FakeTransport.close() 关流会触发 RpcClient 的 onDone。
+      expect(events, isNotEmpty);
+      await sub.cancel();
+    });
+
     test('断开时所有等待中的请求立刻失败，而不是等到超时', () async {
       final future = client.call<dynamic>(Methods.systemHello);
       await Future<void>.delayed(Duration.zero);

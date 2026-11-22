@@ -23,8 +23,13 @@ import 'package:tapmc/domain/models.dart';
 /// 的配合容易踩到「值没传进去却静默跳过」，环境变量在测试进程里一定可见。
 final bool _runE2e = Platform.environment['TAPMC_E2E'] == '1';
 
-/// 后端地址。与 `Main.DEFAULT_PORT` 保持一致。
-const String _endpoint = 'ws://127.0.0.1:8777';
+/// 后端端口。默认与 `Main.DEFAULT_PORT` 保持一致；一键验收脚本会分配空闲端口，
+/// 通过 `TAPMC_E2E_PORT` 传进来，避免误连到用户已经启动的旧后端。
+final int _port = int.tryParse(
+        Platform.environment['TAPMC_E2E_PORT'] ?? '',
+      ) ??
+    8777;
+final Uri _endpoint = Uri(scheme: 'ws', host: '127.0.0.1', port: _port);
 
 /// 把某一格恢复成期望的方块。
 ///
@@ -55,7 +60,7 @@ void main() {
     // 提示，而不是让那几条断言以「协议坏了」的样子红掉。
     setUpAll(() async {
       if (!_runE2e) return;
-      final probe = RpcClient(WebSocketTransport(Uri.parse(_endpoint)));
+      final probe = RpcClient(WebSocketTransport(_endpoint));
       await probe.connect();
       final snapshot = await GameRepository(probe).snapshot();
       await probe.dispose();
@@ -70,9 +75,7 @@ void main() {
     });
 
     setUp(() async {
-      rpc = RpcClient(
-        WebSocketTransport(Uri.parse(_endpoint)),
-      );
+      rpc = RpcClient(WebSocketTransport(_endpoint));
       repo = GameRepository(rpc);
       await rpc.connect();
     });

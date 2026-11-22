@@ -56,3 +56,11 @@ temp/
 
 # —— 本地项目数据，不入库 ——
 .workbuddy/
+
+# —— 发布产物：由 scripts/build_release.sh 生成 ——
+dist/
+
+# —— 运行时存档 ——
+# 服务端默认写 ./world.json。这是玩家自己的世界数据，不属于仓库内容。
+world.json
+*.corrupt-*

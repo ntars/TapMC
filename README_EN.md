@@ -9,7 +9,7 @@
 [![GitHub license](https://img.shields.io/github/license/ntars/TapMC?style=flat-square)](./LICENSE)
 [![Backend](https://img.shields.io/badge/backend-Java%2021-ED8B00.svg?style=flat-square&logo=openjdk&logoColor=white)](./core/backend)
 [![Frontend](https://img.shields.io/badge/frontend-Flutter%203.32-02569B.svg?style=flat-square&logo=flutter&logoColor=white)](./core/frontend)
-[![Tests](https://img.shields.io/badge/tests-79%20passing-2ea44f.svg?style=flat-square)](#)
+[![Tests](https://img.shields.io/badge/tests-82%20backend%2B12%20frontend-2ea44f.svg?style=flat-square)](#)
 
 ---
 
@@ -69,7 +69,7 @@ The back end is the single source of truth; the front end only renders and colle
 
 | Limitation | Scope | Mitigation |
 |---|---|---|
-| No persistence | Restarting resets the map | Roadmap item 1: add a save interface in `core`, protocol unchanged |
+| No persistence | ~~Restarting resets the map~~ | Fixed in 0.2.0: `world.json` is written on shutdown and restored on restart |
 | No authentication | Anyone connected gets a player id; suitable only for localhost or trusted LAN | Binds `127.0.0.1` by default; add a gateway before exposing publicly |
 | Single-threaded serial handling | Concurrent connections limited by one core | Correctness first at skeleton stage; scaling needs a session queue in `server` |
 | Mods cannot hot-load | New mods require recompiling and restarting | Roadmap item 2: isolated class loaders in `ModLoader` |
@@ -111,7 +111,7 @@ The protocol file is the single source of truth; both side's constant classes de
 
 ### 4.2 A core with no network dependency
 
-The `core` module contains no JSON, network or thread code. The whole game logic therefore runs in unit tests without opening a port — the 22 cases in `GameEngineTest` finish in milliseconds.
+The `core` module contains no JSON, network or thread code. The whole game logic therefore runs in unit tests without opening a port — the 22 cases in `GameEngineTest` run without opening a port.
 
 ### 4.3 Mod isolation as a compile-time constraint
 
@@ -190,9 +190,44 @@ The server listens on `127.0.0.1:8777` by default. Front-end artefacts come from
 
 No state at skeleton stage: upgrading means replacing the binary or installer; uninstalling means deleting the directory. Nothing is written to system locations.
 
-### 7.5 Containerisation
+### 7.5 Dynamic mod loading
 
-No image is provided yet. The server has no external dependencies, so `eclipse-temurin:21-jre` plus one jar is enough when deployment is needed.
+Drop a jar implementing the `cn.ntars.tapmc.mod.TapMcMod` SPI into `./mods/` and start the server (the bundled example lives in `examples/mods/`; copy it over to activate it):
+
+```bash
+java -jar dist/server/server-0.1.0-all.jar --mods ./mods --no-save
+# try the example: cp examples/mods/guard-mod.jar ./mods/
+```
+
+Each jar gets its own child `URLClassLoader`, so bundled dependencies do not collide; unloading closes the loader and releases the file handle.
+`system.mods` lists both built-in and dynamically loaded mods with `ACTIVE` / `FAILED` / `DISABLED` states.
+Verified: after copying `examples/mods/guard-mod.jar` into `./mods/`, `system.mods` listed `test.guard`, placing `WOOD` returned `-32004` (cancelled by mod), and removing the jar disabled the cancellation. The example is not in `./mods/` by default so standard acceptance is unaffected.
+Mods run in-process without a security sandbox; only load trusted jars.
+
+---
+
+
+### 7.6 Containerisation
+
+The repository includes a `Dockerfile` and `docker-compose.yml`. The server listens on `0.0.0.0:8777` inside the container with save and mod directories mounted; nginx serves the Web build on port `8080`.
+
+```bash
+./scripts/build_release.sh          # produce dist/web for compose to mount
+docker compose up -d --build
+curl http://127.0.0.1:8080/         # Web artifact
+# the server container runs a health check every 30 s against 127.0.0.1:8777
+docker compose ps                   # server should become healthy
+```
+
+Without Docker, verify the health probe locally:
+
+```bash
+env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
+  bash -lc 'source scripts/env.sh; tapmc_env_init; ./scripts/health_verify.sh'
+```
+
+The script starts a real server and asserts that the probe exits 0 while it is alive and 1 after it stops.
+The health check only proves the port is listening; it does not replace handshake or contract tests.
 
 ---
 
@@ -208,7 +243,7 @@ cd core/backend && ./gradlew :server:run
 cd core/frontend && flutter run -d chrome
 ```
 
-Expected result: a 24×16 grid in the browser with terrain, arrow-key movement, block breaking and placing. Close terminal 2 and reconnect: the status bar moves from "connected" to "connection failed" and retries after a few seconds.
+Expected result: a 24×16 grid in the browser with terrain, arrow-key movement, block breaking and placing. If the backend stops briefly, the front end reconnects automatically (500ms/1s/2s backoff, three attempts), replays hello → snapshot → mods → join, and restores the world. After three failures it shows an error page with a Retry button. For a static Web deployment, pass `?server=ws://host:port` to select the backend.
 
 For a device on the same network, bind the server to `0.0.0.0` and point the front end at the host:
 
@@ -216,6 +251,42 @@ For a device on the same network, bind the server to `0.0.0.0` and point the fro
 cd core/backend && ./gradlew :server:run --args="--host 0.0.0.0"
 cd core/frontend && flutter run --dart-define=TAPMC_SERVER_HOST=192.168.1.10
 ```
+
+### 8.1 One-command self-check
+
+When unsure whether the environment is healthy, run the smoke script: it starts the backend, runs the handshake, serves the Web build statically, then cleans up every process it spawned.
+
+```bash
+./scripts/smoke.sh
+```
+
+Expected key lines:
+
+```text
+[probe] system.hello OK  protocolVersion=1.0  world=24x16  blockTypes=5
+[probe] player.join OK  id=player-1-75416  pos=(12,8)
+[smoke] 通过  protocolVersion=1.0  日志：.../tmp/smoke
+```
+
+| Flag | Effect |
+|---|---|
+| `--no-web` | Backend only, skip the Web artifact check |
+| `--build-web` | Run `flutter build web --release` first (1–3 minutes on a cold build) |
+| `--expect-protocol 1.0` | Assert the server protocol version, catching a one-sided constant drift |
+| `--keep` | Leave processes running for manual inspection |
+
+Exit codes: `0` pass, `1` assertion failed, `2` missing command. On failure the last 40 lines of the relevant log are printed; full logs live in `tmp/smoke/`.
+
+The script needs only `java` and `dart`: the probe at `scripts/smoke/probe.dart` imports nothing but `dart:io`, so no third-party package and no `pub get` is required.
+
+### 8.2 Release build and full acceptance
+
+```bash
+./scripts/build_release.sh          # dist/server + dist/web + dist/SHA256SUMS
+./scripts/verify_release.sh         # six-step acceptance, including real e2e contract
+```
+
+The acceptance script runs 82 backend unit tests, 12 front-end unit tests, a release build, protocol smoke, three persistence scenarios, and 8 real WebSocket contract tests. Use `./scripts/verify_release.sh --skip-e2e` when a live backend contract run is not available. See [RELEASE.md](./RELEASE.md) for deployment and checksum verification.
 
 ---
 
@@ -225,13 +296,16 @@ cd core/frontend && flutter run --dart-define=TAPMC_SERVER_HOST=192.168.1.10
 |---|---|---|---|---|---|
 | `--host` | string | `127.0.0.1` | no | valid IPv4 / hostname | Server listen address |
 | `--port` | integer | `8777` | no | 1–65535 | Server listen port |
+| `--save-file` | string | `world.json` | no | writable path | World save file |
+| `--autosave` | integer | `60` | no | 0–86400 seconds | Periodic save interval; `0` disables autosave |
+| `--no-save` | boolean | off | no | — | Run entirely in memory |
 | `TAPMC_SERVER_HOST` | string (compile-time define) | `127.0.0.1` | no | valid IPv4 / hostname | Server address used by the front end, injected via `--dart-define` |
 
 Precedence: command-line arguments over defaults. The front end has only the compile-time define and reads no configuration file.
 
 Hot reload: protocol and method table support hot-reload debugging on the Flutter side; server configuration changes require a restart.
 
-Proxy note: `core/backend/gradle.properties` and `core/frontend/android/gradle.properties` each contain proxy settings — neither Java nor Gradle reads `HTTPS_PROXY`, so they must be explicit. Comment them out on networks without a proxy.
+Proxy note: Java and Gradle do not read `HTTPS_PROXY`. `scripts/env.sh` translates a reachable proxy into JVM flags at runtime; no dead proxy address is committed to `gradle.properties`.
 
 ---
 
@@ -275,6 +349,17 @@ Error codes:
 ```text
 TapMC/
 ├── LICENSE / LICENSE-MIT / LICENSING.md / NOTICE
+├── scripts/
+│   ├── smoke.sh                 One-command smoke: backend + handshake probe + Web artifact check
+│   ├── macos_verify.sh          One-command macOS desktop check: build + launch + assert player.join
+│   ├── persist_verify.sh        One-command persistence check: shutdown save + restart + SIGKILL autosave
+│   ├── build_release.sh         One-command release build: server jar + Web artifacts + SHA256SUMS
+│   ├── verify_release.sh        One-command acceptance: build + tests + smoke + persistence + contract
+│   ├── env.sh                   Build environment bootstrap: proxy detection and tool paths
+│   ├── smoke/probe.dart         Handshake probe (zero dependencies, `dart:io` only)
+│   └── macos_verify/
+│       ├── relay.dart           Transparent relay probe: forwards and logs every JSON-RPC frame
+│       └── reject_server.dart   Failure-path probe: closes right after handshake to prove the app survives
 └── core/
     ├── backend/                 Java server process (four modules)
     │   ├── protocol/            Wire protocol: envelopes, error codes, method names, DTOs
@@ -301,9 +386,21 @@ Measured build figures (Apple Silicon, network through a proxy):
 | Web build | 13.2 s | `flutter build web --release` |
 | Android build | 12.9 s | After removing the `ndkVersion` declaration, `flutter build apk --debug` |
 | First Android build | 24 min | Mostly downloading NDK r28c (about 2.8 GB) |
-| Back-end tests | 61 cases passing | `./gradlew build` |
+| Back-end tests | 84 cases passing | `./gradlew clean build --no-daemon` |
+| Front-end tests | 14 passed / 8 skipped | `flutter test`; includes two narrow-screen layout assertions; skipped tests need a live backend |
 
-Runtime performance (frame rate, concurrent connections, memory) **has not been benchmarked**; no estimates are given. The skeleton's data volume (24×16 grid, single-process serial handling) is not a bottleneck.
+Measured runtime baseline (Apple Silicon arm64 / macOS 27, `./scripts/bench.sh`, 200 single-connection requests + 10 clients × 40 requests):
+
+| Metric | Result | Condition |
+|---|---|---|
+| Single-connection round trip P50 | 0.224 ms | `world.getBlock`, 200 requests after warm-up |
+| Single-connection round trip P95 | 0.402 ms | Same |
+| 10-client error rate | 0.00% (400/400 completed) | 40 requests per client; every fifth is `world.snapshot` |
+| Server RSS | 85.0 MB average, 86.3 MB peak | Sampled every 0.2 s, 26 samples |
+
+The benchmark uses a temporary port and `--no-save`, so it never touches a player save. Full machine-readable output: `tmp/bench/result.json`. These numbers are a local baseline, not an SLA.
+
+Narrow-screen layout is verified by widget tests: at 375×667 portrait the control pane sits below the world; at 667×375 landscape it moves into a 240 px right-hand scroll pane. In both sizes the direction pad does not overlap the grid and no RenderFlex overflow occurs. Run: `cd core/frontend && flutter test test/home_page_layout_test.dart`. These are size/geometry assertions, not pixel-perfect goldens.
 
 ---
 
@@ -323,15 +420,32 @@ Reporting channel: [SECURITY.md](./SECURITY.md).
 
 | Platform | Build | Run | Note |
 |---|---|---|---|
-| Web | pass | pass | `flutter build web --release` measured |
-| Android | pass | unverified | 142 MB debug APK produced; package name and permissions checked |
-| macOS | unverified | unverified | entitlements set to `network.client` |
-| iOS | unverified | unverified | ATS configured for local networking |
-| Linux | unverified | unverified | Requires a Linux host |
-| Windows | unverified | unverified | Requires a Windows host |
-| HarmonyOS | unverified | unverified | Requires the HarmonyOS Flutter SDK; see [`core/frontend/docs/harmonyos.md`](./core/frontend/docs/harmonyos.md) |
+| Web | pass | pass | `flutter build web --release` exited 0 in 11.5 s this round; smoke test checks static artifacts |
+| Android | historical pass | unverified | Earlier `flutter build apk --debug` produced a 142 MB APK; this round the Android Gradle distribution URL was unreachable, so it could not be re-verified |
+| macOS | historical pass | historical pass | Earlier `flutter build macos --release` produced a 40.6 MB `.app` and a live handshake; this round only Command Line Tools are installed and `flutter build macos` reports `Xcode not installed` |
+| iOS | unverified | unverified | `flutter build ios --release` reports `Xcode not installed`; ATS is configured for local networking |
+| Linux | unverified | unverified | `flutter build linux --release` reports "only supported on Linux hosts"; this host is macOS |
+| Windows | unverified | unverified | `flutter build windows --release` reports "only supported on Windows hosts"; this host is macOS |
+| HarmonyOS | unverified | unverified | Requires the HarmonyOS Flutter SDK; see [`core/frontend/docs/harmonyos.md`](./core/frontend/docs/harmonyos.md); not installed here |
 
-"Unverified" means code and platform configuration are in place and only the build environment is missing; it is not reported as passing. Runtime requirements: JDK 21+, Flutter 3.32+.
+"Unverified" means code and platform configuration are in place and only the build environment is missing; it is not reported as passing. This round used `cd core/frontend && flutter build <platform> --release` for every target; runtime requirements: JDK 21+, Flutter 3.32+.
+
+The macOS build and run can be reproduced with one command (starts the backend, sets up a relay probe, launches the `.app`, and asserts that `player.join` landed):
+
+```bash
+./scripts/macos_verify.sh              # includes the build, ~1 min
+./scripts/macos_verify.sh --no-build   # reuse existing artifact, ~15 s
+```
+
+Expected output (key lines):
+
+```text
+[macos] 产物：.../Release/TapMC.app（39M）
+JOIN_OK JOIN_RESULT id=player-1-78125 pos={x: 12, y: 8}
+[macos] 通过  ...
+```
+
+Exit codes: `0` pass, `1` assertion failed, `2` missing command, `3` port 8777 already taken (a result obtained then could come from a stale process, so it fails fast).
 
 ---
 
@@ -342,16 +456,17 @@ Reporting channel: [SECURITY.md](./SECURITY.md).
 | Issue | Scope | Workaround | Tracking |
 |---|---|---|---|
 | No saves | Restart resets the map | none | Roadmap item 1 |
+| No auto-reconnect | After a drop only manual Retry works; world and player slot are not restored | Click Retry on the error page to rerun the full first-load sequence | Planned for 0.2.x |
 | No authentication | Localhost and trusted LAN only | Do not expose the port | Roadmap item 2 (designed with hot-loading) |
 | Single-threaded handling | Latency rises under concurrency | Cap connections | Unscheduled |
-| Mods cannot hot-load | New mods need a rebuild and restart | Register in code | Roadmap item 2 |
+
 
 ### 15.2 Unimplemented features
 
 | Feature | Why not yet | Status |
 |---|---|---|
 | Save files | Save format and restore semantics must be decided first | Planned |
-| Mod hot-loading | Needs class loader isolation and a security boundary | Planned |
+
 | 3D world | Touches protocol, rendering and pathfinding together | Planned (last) |
 | Health, inventory, facing | Coordinates were enough at skeleton stage | Unscheduled |
 | Multi-client verification | Requires several build environments | Unscheduled |
@@ -378,7 +493,7 @@ Ordered so that no existing contract breaks. All items are non-commitments.
 | Item | Target version | Status |
 |---|---|---|
 | Persistence (interface in `core`, I/O in `server`) | 0.2.0 | Planned |
-| Mod hot-loading (isolated class loaders + security boundary) | 0.3.0 | Planned |
+| Mod hot-loading (isolated class loaders + directory scan) | 0.3.0 | Implemented, see 7.5; security sandbox still absent |
 | Build verification on all targets (Xcode / Windows / Linux / HarmonyOS) | 0.2.x | Planned |
 | 3D world (`z` in the protocol, isometric rendering, pathfinding) | 1.0.0 | Planned |
 

@@ -79,6 +79,49 @@ public final class GameEngine implements ModContext {
         } : broadcaster;
     }
 
+    /**
+     * 把模组事件分发接到外部上下文。
+     *
+     * <p>默认实现是自己（代码内注册的模组照旧工作）；动态加载模组时传入可清空的
+     * [ReloadableModContext]，卸载模组即可撤销监听器，无需重建引擎或世界。
+     */
+    public void setModContext(ModContext context) {
+        this.modContext = context == null ? this : context;
+    }
+
+    private ModContext modContext = this;
+
+    /** 内置模组走引擎自己的监听器；热加载模组由替换后的上下文接管。 */
+    public void dispatchPlace(BlockPlaceEvent event) {
+        if (modContext == this) {
+            for (BlockPlaceListener listener : List.copyOf(placeListeners)) {
+                listener.onBlockPlace(event);
+            }
+        } else {
+            modContext.dispatchPlace(event);
+        }
+    }
+
+    public void dispatchBreak(BlockBreakEvent event) {
+        if (modContext == this) {
+            for (BlockBreakListener listener : List.copyOf(breakListeners)) {
+                listener.onBlockBreak(event);
+            }
+        } else {
+            modContext.dispatchBreak(event);
+        }
+    }
+
+    public void dispatchMove(PlayerMoveEvent event) {
+        if (modContext == this) {
+            for (PlayerMoveListener listener : List.copyOf(moveListeners)) {
+                listener.onPlayerMove(event);
+            }
+        } else {
+            modContext.dispatchMove(event);
+        }
+    }
+
     /* ---------------- 玩家 ---------------- */
 
     /**
@@ -88,6 +131,12 @@ public final class GameEngine implements ModContext {
      * @return 玩家初始状态；地图里没有任何可通行格时返回空
      */
     public Optional<PlayerState> join(String playerId, BlockPos spawn) {
+        // 同一连接的 player.join 必须幂等：重复调用返回原玩家，不能把已经走过的位置
+        // 重置回出生点，否则一次误触或客户端重试就会吞掉玩家进度。
+        Player existing = players.get(playerId);
+        if (existing != null) {
+            return Optional.of(existing.toState());
+        }
         if (!world.contains(spawn.getX(), spawn.getY()) || !world.get(spawn.getX(), spawn.getY()).isWalkable()) {
             BlockPos fallback = findFirstWalkable();
             if (fallback == null) {
@@ -132,9 +181,7 @@ public final class GameEngine implements ModContext {
 
         PlayerMoveEvent event = new PlayerMoveEvent(playerId,
                 from.getX(), from.getY(), to.getX(), to.getY(), direction.name());
-        for (PlayerMoveListener listener : List.copyOf(moveListeners)) {
-            listener.onPlayerMove(event);
-        }
+        dispatchMove(event);
         if (event.isCancelled()) {
             return Outcome.rejected("移动被模组拦下：" + event.getReason());
         }
@@ -172,9 +219,7 @@ public final class GameEngine implements ModContext {
         }
 
         BlockPlaceEvent event = new BlockPlaceEvent(x, y, block.name(), actor);
-        for (BlockPlaceListener listener : List.copyOf(placeListeners)) {
-            listener.onBlockPlace(event);
-        }
+        dispatchPlace(event);
         if (event.isCancelled()) {
             return Outcome.rejected("放置被模组拦下：" + event.getReason());
         }
@@ -199,9 +244,7 @@ public final class GameEngine implements ModContext {
         }
 
         BlockBreakEvent event = new BlockBreakEvent(x, y, current.name(), actor);
-        for (BlockBreakListener listener : List.copyOf(breakListeners)) {
-            listener.onBlockBreak(event);
-        }
+        dispatchBreak(event);
         if (event.isCancelled()) {
             return Outcome.rejected("破坏被模组拦下：" + event.getReason());
         }
