@@ -1,0 +1,25 @@
+[package]
+name = "tapmc-shell"
+version = "0.2.0"
+edition = "2024"
+description = "TapMC native Rust launcher shell"
+license = "MIT"
+
+[dependencies]
+directories = "6.0.0"
+eframe = { version = "0.37.0", default-features = false, features = [
+    "accesskit",
+    "default_fonts",
+    "glow",
+    "system_fonts",
+    "wayland",
+    "x11",
+] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.154"
+tungstenite = "0.30.0"
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+strip = "symbols"
