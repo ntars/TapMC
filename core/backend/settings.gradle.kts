@@ -9,3 +9,14 @@ include("protocol")
 include("mod")
 include("core")
 include("server")
+
+// 使用国内镜像源解决 Gradle SSL 问题
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_ROOT)
+    
+    repositories {
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        maven { url = uri("https://mirrors.tuna.tsinghua.edu.cn/maven/repository/") }
+        mavenCentral()
+    }
+}

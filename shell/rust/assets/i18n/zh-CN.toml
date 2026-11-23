@@ -1,0 +1,45 @@
+# Chinese (Simplified) translations for TapMC Launcher
+# Generated for P2 internationalization support
+
+[ui]
+window_title = "TapMC 启动器"
+player = "玩家"
+block_palette = "方块选择"
+movement = "移动控制"
+server = "服务器设置"
+event_log = "事件日志"
+world_view = "世界视图"
+
+[status]
+connecting = "正在连接..."
+connected = "已连接"
+disconnected = "已断开"
+starting_java = "正在启动 Java 核心..."
+java_started = "Java 核心已启动 (PID {pid})"
+connection_failed = "连接失败：{error}"
+not_connected = "尚未连接"
+
+[buttons]
+launch = "启动"
+stop = "停止"
+connect = "连接"
+disconnect = "断开"
+settings = "设置"
+save = "保存"
+cancel = "取消"
+ok = "确定"
+
+[errors]
+invalid_port = "端口号必须在 1-65535 之间"
+empty_host = "主机地址不能为空"
+empty_java_path = "Java 路径不能为空"
+server_jar_required = "托管模式下必须指定服务器 JAR 文件"
+
+[settings]
+theme = "主题"
+auto_save_interval = "自动保存间隔（秒）"
+manage_server = "管理服务器"
+
+[notifications]
+saved_successfully = "配置已保存"
+launch_started = "启动流程已开始"

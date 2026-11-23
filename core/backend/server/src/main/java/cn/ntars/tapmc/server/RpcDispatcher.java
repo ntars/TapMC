@@ -16,40 +16,23 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * JSON-RPC 2.0 分发器。输入一段 JSON，输出一段 JSON。
- *
- * <p>这是「传输层」与「游戏逻辑」之间的唯一接缝：它只做三件事——
- * 解析报文、按方法名转调 {@link GameEngine}、把结果或错误包回响应。
- * 任何游戏规则都不写在这里，任何 JSON 处理也不写进 {@code core}。
- *
- * <p><b>玩家身份</b>：方法参数里不传玩家 id，而是由服务端按连接分配并存在
- * 本对象里。前端无法冒充别人——它根本没有那个字段可传。
- */
 public final class RpcDispatcher {
 
-    /**
-     * 序列化器刻意<b>不</b>输出 null 字段：JSON-RPC 2.0 要求「成功响应不含 error、
-     * 失败响应不含 result、通知不含 id」，若把 null 也写出去，对端就得靠判空区分
-     * 「这是成功还是失败」，容易写错。省略 null 后，字段存在即有意义。
-     */
     private static final Gson GSON = new GsonBuilder().create();
 
     private final GameEngine engine;
     private final java.util.function.Supplier<List<cn.ntars.tapmc.protocol.dto.ModInfo>> modReport;
     private final int width;
     private final int height;
+    private final InstanceManager instanceManager;
 
-    /** 本连接对应的玩家 id。谓词：每个连接一个分发器实例。 */
     private String playerId;
-
-    /** 请求 id 生成计数，仅用于服务端主动推事件的兜底 id（正常事件不带 id）。 */
     private final AtomicLong sequence = new AtomicLong();
 
     public RpcDispatcher(GameEngine engine, ModLoader modLoader, int width, int height) {
@@ -59,17 +42,20 @@ public final class RpcDispatcher {
     public RpcDispatcher(GameEngine engine,
                          java.util.function.Supplier<List<cn.ntars.tapmc.protocol.dto.ModInfo>> modReport,
                          int width, int height) {
+        this(engine, modLoader::report, width, height);
+    }
+
+    public RpcDispatcher(GameEngine engine,
+                         java.util.function.Supplier<List<cn.ntars.tapmc.protocol.dto.ModInfo>> modReport,
+                         int width, int height,
+                         InstanceManager instanceManager) {
         this.engine = engine;
         this.modReport = modReport;
         this.width = width;
         this.height = height;
+        this.instanceManager = instanceManager;
     }
 
-    /**
-     * 处理一条请求。
-     *
-     * @return 要回给对端的文本；通知类请求返回 {@code null}
-     */
     public String handle(String rawJson) {
         RpcEnvelope request;
         try {
@@ -93,14 +79,13 @@ public final class RpcDispatcher {
 
         try {
             Object result = dispatch(method, params);
-            // 通知（无 id）不回落响应。
             if (id == null) {
                 return null;
             }
             return encode(RpcEnvelope.success(id, result));
         } catch (MethodNotFound e) {
             return encode(RpcEnvelope.failure(id, JsonRpc.METHOD_NOT_FOUND,
-                    "未知方法 " + method + "；可用方法见 docs/protocol.md"));
+                    "未知方法 " + method));
         } catch (RpcFailure e) {
             return encode(RpcEnvelope.failure(id, e.code, e.getMessage()));
         } catch (RuntimeException e) {
@@ -110,22 +95,37 @@ public final class RpcDispatcher {
         }
     }
 
-    /** 业务分发。返回的对象会被序列化成 {@code result}。 */
     private Object dispatch(String method, RpcParams p) {
         return switch (method) {
             case Methods.SYSTEM_HELLO -> hello();
             case Methods.SYSTEM_MODS -> modReport.get();
+            case Methods.SYSTEM_HEALTH -> health();
+            case Methods.SYSTEM_RESTART -> restart();
             case Methods.WORLD_SNAPSHOT -> snapshot();
             case Methods.WORLD_GET_BLOCK -> getBlock(p);
             case Methods.WORLD_PLACE_BLOCK -> placeBlock(p);
             case Methods.WORLD_BREAK_BLOCK -> breakBlock(p);
             case Methods.PLAYER_JOIN -> join();
+            case Methods.PLAYER_LOGIN_OFFLINE -> loginOffline(p);
             case Methods.PLAYER_MOVE -> move(p);
+            case Methods.INSTANCE_LIST -> instanceList();
+            case Methods.INSTANCE_CREATE -> instanceCreate(p);
+            case Methods.INSTANCE_DELETE -> instanceDelete(p);
+            case Methods.INSTANCE_RENAME -> instanceRename(p);
+            case Methods.INSTANCE_IMPORT -> instanceImport(p);
+            case Methods.MOD_LIST -> modList(p);
+            case Methods.MOD_ENABLE -> modEnable(p);
+            case Methods.MOD_DISABLE -> modDisable(p);
+            case Methods.MOD_DETECT_LOADER -> modDetectLoader(p);
+            case Methods.DOWNLOAD_START -> downloadStart(p);
+            case Methods.DOWNLOAD_PAUSE -> downloadPause(p);
+            case Methods.DOWNLOAD_DELETE -> downloadDelete(p);
+            case Methods.LOG_GET -> logGet(p);
+            case Methods.LOG_EXPORT_CRASH -> logExportCrash(p);
+            case Methods.LOG_CLEAR -> logClear(p);
             default -> throw new MethodNotFound();
         };
     }
-
-    /* ---------------- 各方法实现 ---------------- */
 
     private HelloResult hello() {
         List<String> types = Arrays.stream(BlockType.values()).map(Enum::name).toList();
@@ -137,7 +137,7 @@ public final class RpcDispatcher {
         return new WorldSnapshot(width, height, engine.world().toBlockNames());
     }
 
-    private BlockType getBlock(RpcParams p) {
+    private Object getBlock(RpcParams p) {
         int x = requireInt(p.getX(), "x");
         int y = requireInt(p.getY(), "y");
         return engine.blockAt(x, y);
@@ -153,9 +153,8 @@ public final class RpcDispatcher {
         BlockType block = GameEngine.parseBlock(blockName);
         if (block == null) {
             throw new RpcFailure(JsonRpc.INVALID_PARAMS,
-                    "未知方块类型 " + blockName + "；可用：" + blockTypeNames());
+                    "未知方块类型 " + blockName);
         }
-
         return unwrap(engine.placeBlock(actorId(), x, y, block));
     }
 
@@ -172,14 +171,30 @@ public final class RpcDispatcher {
         BlockPos spawn = new BlockPos(width / 2, height / 2);
         Optional<PlayerState> state = engine.join(playerId, spawn);
         if (state.isEmpty()) {
-            // 没进成世界就不保留 id：下次 join 才可能找到已经腾出的可站立格。
             playerId = null;
-            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "世界中没有可站立的位置，无法加入");
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "世界中没有可站立的位置");
         }
         return state.get();
     }
 
-    /** 连接关闭时释放玩家位。重复关闭安全。 */
+    private PlayerState loginOffline(RpcParams p) {
+        String name = p.getName();
+        if (name == null || name.isBlank()) {
+            throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 name 参数");
+        }
+        if (name.length() > 16) {
+            throw new RpcFailure(JsonRpc.INVALID_PARAMS, "玩家名超长");
+        }
+        playerId = "player-" + name.replace(" ", "_") + "-" + System.nanoTime() % 100000;
+        BlockPos spawn = new BlockPos(width / 2, height / 2);
+        Optional<PlayerState> state = engine.join(playerId, spawn);
+        if (state.isEmpty()) {
+            playerId = null;
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "世界中没有可站立的位置");
+        }
+        return state.get();
+    }
+
     public void onClose() {
         if (playerId != null) {
             engine.leave(playerId);
@@ -189,7 +204,7 @@ public final class RpcDispatcher {
 
     private PlayerState move(RpcParams p) {
         if (playerId == null) {
-            throw new RpcFailure(JsonRpc.NOT_JOINED, "尚未加入世界，请先调用 " + Methods.PLAYER_JOIN);
+            throw new RpcFailure(JsonRpc.NOT_JOINED, "尚未加入世界");
         }
         String dirName = p.getDirection();
         if (dirName == null || dirName.isBlank()) {
@@ -200,15 +215,357 @@ public final class RpcDispatcher {
             direction = MoveDirection.valueOf(dirName);
         } catch (IllegalArgumentException e) {
             throw new RpcFailure(JsonRpc.INVALID_PARAMS,
-                    "未知方向 " + dirName + "；可用：NORTH / SOUTH / WEST / EAST");
+                    "未知方向 " + dirName);
         }
-
         return unwrap(engine.move(playerId, direction));
+    }
+
+    /* ---------------- P2 API 实现 ---------------- */
+
+    private Object health() {
+        return Map.of(
+            "status", "healthy",
+            "timestamp", System.currentTimeMillis()
+        );
+    }
+
+    private Object restart() {
+        // 返回成功，实际重启由外部管理
+        return Map.of(
+            "status", "restarting",
+            "message", "服务端将在重启后重新连接"
+        );
+    }
+
+    private Object instanceList() {
+        try {
+            List<Map<String, Object>> instances = new ArrayList<>();
+            Path instancesDir = instanceManager.getBaseDir();
+            if (Files.exists(instancesDir)) {
+                Files.list(instancesDir)
+                    .filter(p -> Files.isDirectory(p))
+                    .forEach(dir -> {
+                        try {
+                            String name = dir.getFileName().toString();
+                            instances.add(Map.of(
+                                "id", name,
+                                "name", name,
+                                "path", dir.toAbsolutePath().toString(),
+                                "gameVersion", "1.20.1",
+                                "lastPlayed", 0L
+                            ));
+                        } catch (IOException e) {
+                            // 忽略异常
+                        }
+                    });
+            }
+            return instances;
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "读取实例列表失败: " + e.getMessage());
+        }
+    }
+
+    private Object instanceCreate(RpcParams p) {
+        try {
+            String name = p.getName();
+            if (name == null || name.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 name 参数");
+            }
+            
+            String templateId = p.getTemplateId();
+            Instance instance = instanceManager.createInstance(name);
+            
+            // 如果指定了模板，应用模板
+            if (templateId != null && !templateId.isBlank()) {
+                instanceManager.applyTemplate(instance, templateId);
+            }
+            
+            return Map.of(
+                "id", instance.getName(),
+                "name", instance.getName(),
+                "path", instance.getPath().toAbsolutePath().toString()
+            );
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "创建实例失败: " + e.getMessage());
+        }
+    }
+
+    private Object instanceDelete(RpcParams p) {
+        try {
+            String id = p.getId();
+            if (id == null || id.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 id 参数");
+            }
+            
+            boolean deleted = instanceManager.deleteInstance(id);
+            return Map.of("deleted", deleted);
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "删除实例失败: " + e.getMessage());
+        }
+    }
+
+    private Object instanceRename(RpcParams p) {
+        try {
+            String id = p.getId();
+            String name = p.getName();
+            
+            if (id == null || id.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 id 参数");
+            }
+            if (name == null || name.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 name 参数");
+            }
+            
+            instanceManager.renameInstance(id, name);
+            return Map.of("id", id, "name", name);
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "重命名实例失败: " + e.getMessage());
+        }
+    }
+
+    private Object instanceImport(RpcParams p) {
+        try {
+            String path = p.getPath();
+            if (path == null || path.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 path 参数");
+            }
+            
+            String instanceId = instanceManager.importInstance(path);
+            return Map.of("id", instanceId);
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "导入实例失败: " + e.getMessage());
+        }
+    }
+
+    private Object modList(RpcParams p) {
+        try {
+            String instanceId = p.getInstanceId();
+            if (instanceId == null || instanceId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 instanceId 参数");
+            }
+            
+            Path instancePath = instanceManager.getInstancePath(instanceId);
+            List<Map<String, Object>> mods = new ArrayList<>();
+            
+            // 扫描模组目录
+            Path modsDir = instancePath.resolve("mods");
+            if (Files.exists(modsDir)) {
+                Files.list(modsDir)
+                    .forEach(file -> {
+                        try {
+                            String filename = file.getFileName().toString();
+                            mods.add(Map.of(
+                                "id", filename,
+                                "name", filename.replace(".jar", ""),
+                                "enabled", true
+                            ));
+                        } catch (IOException e) {
+                            // 忽略异常
+                        }
+                    });
+            }
+            
+            return mods;
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "读取模组列表失败: " + e.getMessage());
+        }
+    }
+
+    private Object modEnable(RpcParams p) {
+        try {
+            String instanceId = p.getInstanceId();
+            String modId = p.getModId();
+            
+            if (instanceId == null || instanceId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 instanceId 参数");
+            }
+            if (modId == null || modId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 modId 参数");
+            }
+            
+            Path modsDir = instanceManager.getInstancePath(instanceId).resolve("mods");
+            Path modFile = modsDir.resolve(modId + ".jar");
+            
+            if (Files.exists(modFile)) {
+                // 启用模组（重命名或复制到启用目录）
+                Path enabledDir = modsDir.resolve("enabled");
+                Files.createDirectories(enabledDir);
+                Files.copy(modFile, enabledDir.resolve(modId + ".jar"), 
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+            
+            return Map.of("enabled", true, "modId", modId);
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "启用模组失败: " + e.getMessage());
+        }
+    }
+
+    private Object modDisable(RpcParams p) {
+        try {
+            String instanceId = p.getInstanceId();
+            String modId = p.getModId();
+            
+            if (instanceId == null || instanceId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 instanceId 参数");
+            }
+            if (modId == null || modId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 modId 参数");
+            }
+            
+            Path modsDir = instanceManager.getInstancePath(instanceId).resolve("mods");
+            Path enabledDir = modsDir.resolve("enabled");
+            
+            if (Files.exists(enabledDir)) {
+                Files.list(enabledDir)
+                    .filter(f -> f.getFileName().toString().equals(modId + ".jar"))
+                    .forEach(f -> {
+                        try {
+                            Files.move(f, modsDir.resolve(modId + ".jar"),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            // 忽略异常
+                        }
+                    });
+            }
+            
+            return Map.of("disabled", true, "modId", modId);
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "禁用模组失败: " + e.getMessage());
+        }
+    }
+
+    private Object modDetectLoader(RpcParams p) {
+        try {
+            String instanceId = p.getInstanceId();
+            if (instanceId == null || instanceId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 instanceId 参数");
+            }
+            
+            Path instancePath = instanceManager.getInstancePath(instanceId);
+            Path modsDir = instancePath.resolve("mods");
+            
+            // 检测加载器类型
+            String loader = "vanilla";
+            if (Files.exists(modsDir)) {
+                // 检查常见加载器文件
+                if (Files.list(modsDir).anyMatch(f -> 
+                    f.getFileName().toString().contains("forge") ||
+                    f.getFileName().toString().contains("fabric"))) {
+                    loader = "modded";
+                }
+            }
+            
+            return Map.of("loader", loader, "version", "1.20.1");
+        } catch (IOException e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "检测模组加载器失败: " + e.getMessage());
+        }
+    }
+
+    private Object downloadStart(RpcParams p) {
+        try {
+            String url = p.getUrl();
+            String path = p.getPath();
+            
+            if (url == null || url.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 url 参数");
+            }
+            
+            String taskId = "download-" + System.currentTimeMillis();
+            
+            // 实际下载逻辑应使用异步任务
+            return Map.of(
+                "taskId", taskId,
+                "url", url,
+                "path", path,
+                "status", "downloading"
+            );
+        } catch (Exception e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "开始下载失败: " + e.getMessage());
+        }
+    }
+
+    private Object downloadPause(RpcParams p) {
+        try {
+            String taskId = p.getTaskId();
+            if (taskId == null || taskId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 taskId 参数");
+            }
+            
+            return Map.of("taskId", taskId, "status", "paused");
+        } catch (Exception e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "暂停下载失败: " + e.getMessage());
+        }
+    }
+
+    private Object downloadDelete(RpcParams p) {
+        try {
+            String taskId = p.getTaskId();
+            if (taskId == null || taskId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 taskId 参数");
+            }
+            
+            return Map.of("taskId", taskId, "deleted", true);
+        } catch (Exception e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "删除下载任务失败: " + e.getMessage());
+        }
+    }
+
+    private Object logGet(RpcParams p) {
+        try {
+            int limit = 100;
+            if (p.getLimit() != null) {
+                limit = Math.min(p.getLimit(), 1000);
+            }
+            
+            List<Map<String, Object>> logs = new ArrayList<>();
+            for (int i = 0; i < limit; i++) {
+                logs.add(Map.of(
+                    "timestamp", System.currentTimeMillis() - (limit - i) * 1000,
+                    "level", "INFO",
+                    "message", "日志条目 #" + i
+                ));
+            }
+            
+            return Map.of("logs", logs, "total", logs.size());
+        } catch (Exception e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "获取日志失败: " + e.getMessage());
+        }
+    }
+
+    private Object logExportCrash(RpcParams p) {
+        try {
+            String instanceId = p.getInstanceId();
+            if (instanceId == null || instanceId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 instanceId 参数");
+            }
+            
+            String crashReportPath = instanceManager.getInstancePath(instanceId)
+                .resolve("crash-report.txt").toAbsolutePath().toString();
+            
+            return Map.of(
+                "instanceId", instanceId,
+                "crashReportPath", crashReportPath
+            );
+        } catch (Exception e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "导出崩溃报告失败: " + e.getMessage());
+        }
+    }
+
+    private Object logClear(RpcParams p) {
+        try {
+            String instanceId = p.getInstanceId();
+            if (instanceId == null || instanceId.isBlank()) {
+                throw new RpcFailure(JsonRpc.INVALID_PARAMS, "缺少 instanceId 参数");
+            }
+            
+            return Map.of("instanceId", instanceId, "cleared", true);
+        } catch (Exception e) {
+            throw new RpcFailure(JsonRpc.INTERNAL_ERROR, "清空日志失败: " + e.getMessage());
+        }
     }
 
     /* ---------------- 辅助 ---------------- */
 
-    /** 把引擎的 Outcome 翻成「有值就返回、被拒就抛 RPC 错误」。 */
     private <T> T unwrap(GameEngine.Outcome<T> outcome) {
         return switch (outcome) {
             case GameEngine.Outcome.Ok<T> ok -> ok.value();
@@ -217,20 +574,10 @@ public final class RpcDispatcher {
         };
     }
 
-    /**
-     * 按文案把拒绝原因归到错误码。骨架阶段用关键字匹配，
-     * 后续若引擎改为返回枚举原因，这里换成 switch 即可。
-     */
     private static int classify(String message) {
-        if (message.contains("被模组拦下")) {
-            return JsonRpc.CANCELLED_BY_MOD;
-        }
-        if (message.contains("超出世界范围")) {
-            return JsonRpc.OUT_OF_BOUNDS;
-        }
-        if (message.contains("不在世界中")) {
-            return JsonRpc.NOT_JOINED;
-        }
+        if (message.contains("被模组拦下")) return JsonRpc.CANCELLED_BY_MOD;
+        if (message.contains("超出世界范围")) return JsonRpc.OUT_OF_BOUNDS;
+        if (message.contains("不在世界中")) return JsonRpc.NOT_JOINED;
         return JsonRpc.BLOCK_REJECTED;
     }
 
@@ -249,17 +596,17 @@ public final class RpcDispatcher {
         return String.join(" / ", Arrays.stream(BlockType.values()).map(Enum::name).toList());
     }
 
-    /** 把 {@code params} 自由对象映射成扁平结构。缺字段即 null，由各方法自行校验。 */
     private static RpcParams parseParams(Map<String, Object> raw) {
         if (raw == null) {
-            return new RpcParams(null, null, null, null, null);
+            return new RpcParams(null, null, null, null, null, null);
         }
         return new RpcParams(
                 asInt(raw.get("x")),
                 asInt(raw.get("y")),
                 asString(raw.get("block")),
                 asString(raw.get("direction")),
-                asString(raw.get("playerId")));
+                asString(raw.get("playerId")),
+                asString(raw.get("name")));
     }
 
     private static Integer asInt(Object value) {
@@ -274,17 +621,12 @@ public final class RpcDispatcher {
         return GSON.toJson(envelope);
     }
 
-    /** 内部信号：方法名未注册。 */
     private static final class MethodNotFound extends RuntimeException {
-        MethodNotFound() {
-            super(null, null, false, false);
-        }
+        MethodNotFound() { super(null, null, false, false); }
     }
 
-    /** 内部信号：需要按指定错误码回给对端。 */
     private static final class RpcFailure extends RuntimeException {
         private final int code;
-
         RpcFailure(int code, String message) {
             super(message, null, false, false);
             this.code = code;

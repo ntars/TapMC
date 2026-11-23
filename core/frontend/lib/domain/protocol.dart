@@ -29,6 +29,10 @@ abstract final class Methods {
   static const String systemHello = 'system.hello';
   static const String systemMods = 'system.mods';
 
+  // 系统扩展（P2 新增）
+  static const String systemHealth = 'system.health';
+  static const String systemRestart = 'system.restart';
+
   // world
   static const String worldSnapshot = 'world.snapshot';
   static const String worldGetBlock = 'world.getBlock';
@@ -38,6 +42,29 @@ abstract final class Methods {
   // player
   static const String playerJoin = 'player.join';
   static const String playerMove = 'player.move';
+
+  // 实例与整合包管理（P2 新增）
+  static const String instanceList = 'instance.list';
+  static const String instanceCreate = 'instance.create';
+  static const String instanceDelete = 'instance.delete';
+  static const String instanceRename = 'instance.rename';
+  static const String instanceImport = 'instance.import';
+
+  // 模组管理（P2 新增）
+  static const String modList = 'mod.list';
+  static const String modEnable = 'mod.enable';
+  static const String modDisable = 'mod.disable';
+  static const String modDetectLoader = 'mod.detectLoader';
+
+  // 下载与更新（P2 新增）
+  static const String downloadStart = 'download.start';
+  static const String downloadPause = 'download.pause';
+  static const String downloadDelete = 'download.delete';
+
+  // 日志与诊断（P2 新增）
+  static const String logGet = 'log.get';
+  static const String logExportCrash = 'log.exportCrash';
+  static const String logClear = 'log.clear';
 
   // 服务端主动推的事件
   static const String eventWorldChanged = 'event.worldChanged';

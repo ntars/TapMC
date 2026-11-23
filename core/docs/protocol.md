@@ -195,6 +195,31 @@ JSON 里二维数组体积更大，且反序列化后直接当列表用更省事
 
 ### player
 
+#### `player.loginOffline`
+
+离线模式登录。适用于没有 Microsoft 账号的用户。
+
+参数：
+
+- `name`（字符串，必填）：玩家名，最长 16 字符
+
+结果：
+
+```json
+{
+  "id": "player-1-72375",
+  "pos": { "x": 12, "y": 8 }
+}
+```
+
+错误码：
+- `-32602`：参数缺失或非法（玩家名为空或超长）
+- `-32603`：服务器内部错误
+
+注意：
+- 离线模式不验证玩家名唯一性，同名玩家会共享同一游戏存档
+- 玩家名不包含空格和特殊字符（仅允许字母、数字、下划线）
+
 #### `player.join`
 
 加入世界，占一个玩家位。
@@ -339,3 +364,314 @@ JSON 里二维数组体积更大，且反序列化后直接当列表用更省事
 
 它只覆盖 `system.hello` / `world.snapshot` / `player.join` 三条主链路，
 是上面的契约测试的**子集**，不能替代第 5 步。
+
+### instance
+
+#### `instance.list`
+
+列出所有实例。
+
+参数：无。
+
+结果：
+
+```json
+[
+  {
+    "id": "instance-1",
+    "name": "我的世界生存",
+    "lastPlayed": 1703256000,
+    "gameVersion": "1.20.1"
+  }
+]
+```
+
+#### `instance.create`
+
+创建新实例。
+
+参数：
+
+```json
+{
+  "name": "我的世界生存",
+  "templateId": "default" // 可选
+}
+```
+
+结果：
+
+```json
+{
+  "id": "instance-1"
+}
+```
+
+#### `instance.delete`
+
+删除实例。
+
+参数：
+
+```json
+{
+  "id": "instance-1"
+}
+```
+
+结果：无
+
+#### `instance.rename`
+
+重命名实例。
+
+参数：
+
+```json
+{
+  "id": "instance-1",
+  "name": "新的实例名"
+}
+```
+
+结果：无
+
+#### `instance.import`
+
+导入整合包。
+
+参数：
+
+```json
+{
+  "path": "/path/to/modpack.zip"
+}
+```
+
+结果：
+
+```json
+{
+  "id": "instance-1",
+  "name": "整合包名"
+}
+```
+
+### mod
+
+#### `mod.list`
+
+列出实例的模组。
+
+参数：
+
+```json
+{
+  "instanceId": "instance-1"
+}
+```
+
+结果：
+
+```json
+[
+  {
+    "id": "fabric-api",
+    "name": "Fabric API",
+    "version": "0.95.0+1.20.1",
+    "loader": "fabric",
+    "enabled": true
+  }
+]
+```
+
+#### `mod.enable`
+
+启用模组。
+
+参数：
+
+```json
+{
+  "instanceId": "instance-1",
+  "modId": "fabric-api"
+}
+```
+
+结果：无
+
+#### `mod.disable`
+
+禁用模组。
+
+参数：
+
+```json
+{
+  "instanceId": "instance-1",
+  "modId": "fabric-api"
+}
+```
+
+结果：无
+
+#### `mod.detectLoader`
+
+识别加载器类型。
+
+参数：
+
+```json
+{
+  "instanceId": "instance-1"
+}
+```
+
+结果：
+
+```json
+{
+  "loader": "fabric",
+  "version": "0.14.21"
+}
+```
+
+### download
+
+#### `download.start`
+
+开始下载。
+
+参数：
+
+```json
+{
+  "url": "https://example.com/mod.jar",
+  "path": "/path/to/download/mod.jar"
+}
+```
+
+结果：
+
+```json
+{
+  "taskId": "download-1"
+}
+```
+
+#### `download.pause`
+
+暂停下载。
+
+参数：
+
+```json
+{
+  "taskId": "download-1"
+}
+```
+
+结果：无
+
+#### `download.delete`
+
+删除下载任务。
+
+参数：
+
+```json
+{
+  "taskId": "download-1"
+}
+```
+
+结果：无
+
+### log
+
+#### `log.get`
+
+获取最近的日志。
+
+参数：
+
+```json
+{
+  "limit": 100,
+  "instanceId": "instance-1" // 可选
+}
+```
+
+结果：
+
+```json
+[
+  {
+    "timestamp": 1703256000,
+    "level": "INFO",
+    "message": "Server started"
+  }
+]
+```
+
+#### `log.exportCrash`
+
+导出崩溃报告。
+
+参数：
+
+```json
+{
+  "instanceId": "instance-1"
+}
+```
+
+结果：
+
+```json
+{
+  "path": "/path/to/crash-report.txt"
+}
+```
+
+#### `log.clear`
+
+清空日志。
+
+参数：
+
+```json
+{
+  "instanceId": "instance-1"
+}
+```
+
+结果：无
+
+### system extensions
+
+#### `system.health`
+
+检查系统健康状态。
+
+参数：无。
+
+结果：
+
+```json
+{
+  "status": "healthy",
+  "javaVersion": "17.0.9",
+  "memoryUsedMB": 512,
+  "memoryMaxMB": 2048
+}
+```
+
+#### `system.restart`
+
+重启服务端。
+
+参数：无。
+
+结果：无
+

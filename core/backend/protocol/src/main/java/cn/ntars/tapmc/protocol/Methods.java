@@ -19,6 +19,14 @@ public final class Methods {
     /** 列出生效的模组。前端「模组」页用。 */
     public static final String SYSTEM_MODS = "system.mods";
 
+    /* ---- system extensions：系统扩展（P2 新增）---- */
+
+    /** 检查系统健康状态。 */
+    public static final String SYSTEM_HEALTH = "system.health";
+
+    /** 重启服务端。 */
+    public static final String SYSTEM_RESTART = "system.restart";
+
     /* ---- world：世界读写 ---- */
 
     /** 取整张地图快照。首屏加载用。 */
@@ -38,8 +46,64 @@ public final class Methods {
     /** 加入世界，占一个玩家位。返回玩家 id 与出生点。 */
     public static final String PLAYER_JOIN = "player.join";
 
+    /** 离线模式登录。参数：name（玩家名）。返回玩家身份与出生点。 */
+    public static final String PLAYER_LOGIN_OFFLINE = "player.loginOffline";
+
     /** 按方向移动一格。 */
     public static final String PLAYER_MOVE = "player.move";
+
+    /* ---- instance：实例与整合包管理（P2 新增）---- */
+
+    /** 列出所有实例。 */
+    public static final String INSTANCE_LIST = "instance.list";
+
+    /** 创建新实例。参数：name（实例名）、templateId（模板ID，可选）。 */
+    public static final String INSTANCE_CREATE = "instance.create";
+
+    /** 删除实例。参数：id（实例ID）。 */
+    public static final String INSTANCE_DELETE = "instance.delete";
+
+    /** 重命名实例。参数：id（实例ID）、name（新名称）。 */
+    public static final String INSTANCE_RENAME = "instance.rename";
+
+    /** 导入整合包。参数：path（zip/mrpack 文件路径）。 */
+    public static final String INSTANCE_IMPORT = "instance.import";
+
+    /* ---- mod：模组管理（P2 新增）---- */
+
+    /** 列出实例的模组。参数：instanceId（实例ID）。 */
+    public static final String MOD_LIST = "mod.list";
+
+    /** 启用模组。参数：instanceId（实例ID）、modId（模组ID）。 */
+    public static final String MOD_ENABLE = "mod.enable";
+
+    /** 禁用模组。参数：instanceId（实例ID）、modId（模组ID）。 */
+    public static final String MOD_DISABLE = "mod.disable";
+
+    /** 识别加载器类型。参数：instanceId（实例ID）。 */
+    public static final String MOD_DETECT_LOADER = "mod.detectLoader";
+
+    /* ---- download：下载与更新（P2 新增）---- */
+
+    /** 开始下载。参数：url（下载地址）、path（保存路径）。 */
+    public static final String DOWNLOAD_START = "download.start";
+
+    /** 暂停下载。参数：taskId（任务ID）。 */
+    public static final String DOWNLOAD_PAUSE = "download.pause";
+
+    /** 删除下载任务。参数：taskId（任务ID）。 */
+    public static final String DOWNLOAD_DELETE = "download.delete";
+
+    /* ---- log：日志与诊断（P2 新增）---- */
+
+    /** 获取最近的日志。参数：limit（日志条数）。 */
+    public static final String LOG_GET = "log.get";
+
+    /** 导出崩溃报告。参数：instanceId（实例ID）。 */
+    public static final String LOG_EXPORT_CRASH = "log.exportCrash";
+
+    /** 清空日志。参数：instanceId（实例ID）。 */
+    public static final String LOG_CLEAR = "log.clear";
 
     /* ---- event：服务端主动推 ---- */
 

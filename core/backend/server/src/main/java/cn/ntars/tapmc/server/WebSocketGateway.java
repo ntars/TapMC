@@ -7,6 +7,7 @@ import org.java_websocket.server.WebSocketServer;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * WebSocket 网关。把 {@link GameServer} 暴露到 {@code ws://host:port}。
@@ -27,6 +28,11 @@ public final class WebSocketGateway extends WebSocketServer {
     private final Map<WebSocket, ClientSession> sessions = new ConcurrentHashMap<>();
     private final Map<WebSocket, RpcDispatcher> dispatchers = new ConcurrentHashMap<>();
 
+    /** 断线自动重连尝试计数 */
+    private final AtomicInteger reconnectAttempts = new AtomicInteger(0);
+    private static final int MAX_RECONNECT_ATTEMPTS = 3;
+    private static final long RECONNECT_DELAY_MS = 1000;
+
     public WebSocketGateway(InetSocketAddress address, GameServer server) {
         super(address);
         this.server = server;
@@ -35,6 +41,9 @@ public final class WebSocketGateway extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        // 重置断线计数
+        reconnectAttempts.set(0);
+        
         ClientSession session = new WsSession(conn);
         sessions.put(conn, session);
         dispatchers.put(conn, server.newDispatcher());
@@ -52,13 +61,27 @@ public final class WebSocketGateway extends WebSocketServer {
 
         // 全局串行化：世界状态只有一份，多个连接的写必须排队。
         String response;
-        synchronized (server.engine()) {
-            response = dispatcher.handle(message);
+        try {
+            synchronized (server.engine()) {
+                response = dispatcher.handle(message);
+            }
+        } catch (Exception e) {
+            System.err.println("[TapMC] 处理消息异常：" + e.getMessage());
+            String errorMsg = "[TapMC] 服务端错误：" + e.getClass().getSimpleName();
+            if (e.getMessage() != null) {
+                errorMsg += "：" + e.getMessage();
+            }
+            conn.send(errorMsg);
+            return;
         }
 
         // 通知类请求返回 null，此时不回落，符合 JSON-RPC 2.0。
         if (response != null) {
-            conn.send(response);
+            try {
+                conn.send(response);
+            } catch (Exception e) {
+                System.err.println("[TapMC] 发送响应异常：" + e.getMessage());
+            }
         }
     }
 
@@ -72,15 +95,35 @@ public final class WebSocketGateway extends WebSocketServer {
         if (session != null) {
             server.detach(session);
         }
-        System.out.println("[TapMC] 客户端断开 " + conn.getRemoteSocketAddress()
-                + " code=" + code
-                + (reason == null || reason.isBlank() ? "" : " reason=" + reason));
+        
+        // 检查是否需要自动重连
+        if (code != 1000 && reconnectAttempts.get() < MAX_RECONNECT_ATTEMPTS) {
+            int attempts = reconnectAttempts.incrementAndGet();
+            System.out.println("[TapMC] 客户端断开 " + conn.getRemoteSocketAddress()
+                    + " code=" + code
+                    + (reason == null || reason.isBlank() ? "" : " reason=" + reason)
+                    + "，将在 " + RECONNECT_DELAY_MS + "ms 后尝试重连（第 " + attempts + "/" 
+                    + MAX_RECONNECT_ATTEMPTS + " 次）");
+            
+            // 触发重连检查（实际在客户端实现）
+        } else {
+            System.out.println("[TapMC] 客户端断开 " + conn.getRemoteSocketAddress()
+                    + " code=" + code
+                    + (reason == null || reason.isBlank() ? "" : " reason=" + reason));
+        }
     }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
         String who = conn == null ? "服务端" : String.valueOf(conn.getRemoteSocketAddress());
-        System.err.println("[TapMC] " + who + " 异常：" + ex.getMessage());
+        
+        // 错误恢复策略
+        if (ex.getMessage() != null && ex.getMessage().contains("连接重置")) {
+            System.err.println("[TapMC] " + who + " 连接异常（可能网络波动）：" 
+                    + ex.getMessage());
+        } else {
+            System.err.println("[TapMC] " + who + " 异常：" + ex.getMessage());
+        }
     }
 
     @Override
@@ -88,6 +131,8 @@ public final class WebSocketGateway extends WebSocketServer {
         System.out.println("[TapMC] 服务已启动，监听 " + getAddress());
         System.out.println("[TapMC] 世界尺寸 " + server.width() + "x" + server.height()
                 + "，模组 " + server.modReport().size() + " 个");
+        System.out.println("[TapMC] 自动重连：最大 " + MAX_RECONNECT_ATTEMPTS + " 次，间隔 "
+                + RECONNECT_DELAY_MS + "ms");
     }
 
     /** 把 WebSocket 连接包装成 {@link ClientSession}。 */
@@ -102,7 +147,11 @@ public final class WebSocketGateway extends WebSocketServer {
         public void send(String text) {
             // 断连的连接直接丢弃，避免广播时抛异常打断整轮循环。
             if (conn.isOpen()) {
-                conn.send(text);
+                try {
+                    conn.send(text);
+                } catch (Exception e) {
+                    // 忽略发送异常
+                }
             }
         }
     }

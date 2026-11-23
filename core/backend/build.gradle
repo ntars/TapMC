@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'cn.ntars.tapmc'
+version = '0.1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    // 使用国内镜像源
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://mirrors.tuna.tsinghua.edu.cn/maven/repository/' }
+    mavenCentral()
+}
+
+dependencies {
+    // WebSocket 服务
+    implementation 'org.java-websocket:Java-WebSocket:1.5.4'
+    
+    // JSON 处理
+    implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // 日志
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+    
+    // 测试
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+}
+
+application {
+    mainClass = 'cn.ntars.tapmc.server.MainServer'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform()
+}

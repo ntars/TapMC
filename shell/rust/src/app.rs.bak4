@@ -1,0 +1,796 @@
+use std::sync::mpsc::{self, Receiver, Sender};
+use std::thread;
+use std::time::{Duration, Instant};
+
+use eframe::egui::{
+    self, Align, Button, Color32, CornerRadius, FontFamily, FontId, Frame, Layout, Margin,
+    RichText, Sense, Stroke, StrokeKind, Vec2,
+};
+
+use crate::config::{LauncherConfig, ThemePreference};
+use crate::core_process::JavaCore;
+use crate::protocol::{BlockType, MoveDirection};
+use crate::rpc::RpcClient;
+use crate::session::{ConnectionStage, LauncherSession};
+use crate::localization::Translations;
+
+const ACCENT: Color32 = Color32::from_rgb(87, 196, 255);
+const ACCENT_WARM: Color32 = Color32::from_rgb(255, 153, 69);
+const SUCCESS: Color32 = Color32::from_rgb(88, 214, 141);
+const DANGER: Color32 = Color32::from_rgb(255, 99, 99);
+const CELL_STONE: Color32 = Color32::from_rgb(115, 125, 139);
+const CELL_DIRT: Color32 = Color32::from_rgb(170, 126, 83);
+const CELL_WATER: Color32 = Color32::from_rgb(72, 145, 201);
+const CELL_WOOD: Color32 = Color32::from_rgb(132, 86, 62);
+const CELL_AIR_DARK: Color32 = Color32::from_rgb(26, 34, 44);
+const CELL_AIR_LIGHT: Color32 = Color32::from_rgb(231, 237, 241);
+
+enum TaskResult {
+    Connected {
+        client: RpcClient,
+        ready: LauncherSession,
+    },
+    Failed(String),
+    WorldUpdated(LauncherSession),
+}
+
+pub struct TapMcApp {
+    config: LauncherConfig,
+    session: LauncherSession,
+    client: Option<RpcClient>,
+    core: JavaCore,
+    task_tx: Sender<TaskResult>,
+    task_rx: Receiver<TaskResult>,
+    busy: bool,
+    status_line: String,
+    settings_draft: LauncherConfig,
+    settings_open: bool,
+    saved_flash: Option<Instant>,
+    translations: Translations,
+}
+
+impl TapMcApp {
+    pub fn new(cc: &eframe::CreationContext<'_>, config: LauncherConfig) -> Self {
+        install_fonts(&cc.egui_ctx);
+        apply_theme(&cc.egui_ctx, config.theme);
+        let (task_tx, task_rx) = mpsc::channel();
+        let translations = Translations::chinese();  // Chinese localization
+        let status_line = if config.manage_server {
+            translations.java_started.replace("{pid}", "...")
+        } else {
+            format!("{} {}", translations.connecting, config.endpoint())
+        };
+        Self {
+            settings_draft: config.clone(),
+            translations,
+            config,
+            session: LauncherSession::default(),
+            client: None,
+            core: JavaCore::new(),
+            task_tx,
+            task_rx,
+            busy: false,
+            status_line,
+            settings_open: false,
+            saved_flash: None,
+        }
+    }
+
+    fn launch(&mut self, ctx: &egui::Context) {
+        if self.busy {
+            return;
+        }
+        if self.config.manage_server {
+            match self.core.start(&self.config) {
+                Ok(()) => {
+                    self.status_line = format!(
+                        "{}",
+                        self.translations.java_started.replace("{pid}", &self.core.pid().unwrap_or_default().to_string())
+                    );
+                }
+                Err(error) => {
+                    self.session.mark_failed(error);
+                    return;
+                }
+            }
+        }
+        self.busy = true;
+        self.session.stage = ConnectionStage::Connecting;
+        self.status_line = format!(
+                        "{} {}",
+                        self.translations.connecting,
+                        self.config.endpoint()
+                    );
+        let endpoint = self.config.endpoint();
+        let tx = self.task_tx.clone();
+        thread::spawn(move || {
+            let mut session = LauncherSession::default();
+            match session.connect(&endpoint) {
+                Ok(client) => {
+                    let _ = tx.send(TaskResult::Connected {
+                        client,
+                        ready: session,
+                    });
+                }
+                Err(error) => {
+                    let _ = tx.send(TaskResult::Failed(error));
+                }
+            }
+        });
+        ctx.request_repaint();
+    }
+
+    fn disconnect(&mut self) {
+        if let Some(client) = self.client.take() {
+            client.close();
+        }
+        self.core.stop();
+        self.session = LauncherSession::default();
+        self.status_line = self.translations.disconnected.clone();
+    }
+
+    fn apply_draft(&mut self, ctx: &egui::Context) {
+        match self
+            .settings_draft
+            .validate()
+            .and_then(|()| self.settings_draft.save())
+        {
+            Ok(()) => {
+                self.config = self.settings_draft.clone();
+                apply_theme(ctx, self.config.theme);
+                self.saved_flash = Some(Instant::now());
+                self.status_line = self.translations.notification_saved_successfully.clone();
+            }
+            Err(error) => {
+                self.status_line = format!("{}: {}", self.translations.settings_save_failed, error);
+            }
+        }
+    }
+
+    fn enqueue_world_action(&mut self, action: WorldAction, ctx: &egui::Context) {
+        let Some(client) = self.client.as_ref() else {
+            self.status_line = self.translations.not_connected.clone();
+            return;
+        };
+        let mut snapshot = self.session.clone();
+        let tx = self.task_tx.clone();
+        self.busy = true;
+        let client = client.clone();
+        thread::spawn(move || {
+            let result = match &action {
+                WorldAction::Move(direction) => snapshot.move_player(&client, *direction),
+                WorldAction::Place { x, y } => snapshot.place_block(&client, *x, *y),
+                WorldAction::Break { x, y } => snapshot.break_block(&client, *x, *y),
+            };
+            match result {
+                Ok(()) => {
+                    let _ = tx.send(TaskResult::WorldUpdated(snapshot));
+                }
+                Err(error) => {
+                    let _ = tx.send(TaskResult::Failed(error.to_string()));
+                }
+            }
+        });
+        ctx.request_repaint();
+    }
+
+    fn drain_tasks(&mut self, ctx: &egui::Context) {
+        while let Ok(result) = self.task_rx.try_recv() {
+            self.busy = false;
+            match result {
+                TaskResult::Connected { client, ready } => {
+                    self.session = ready;
+                    self.status_line = self.session.message.clone();
+                    self.client = Some(client);
+                }
+                TaskResult::Failed(message) => {
+                    self.session.mark_failed(message);
+                    self.status_line = self.session.message.clone();
+                    self.core.stop();
+                }
+                TaskResult::WorldUpdated(session) => {
+                    self.session = session;
+                    self.status_line = self.session.message.clone();
+                }
+            }
+            ctx.request_repaint();
+        }
+    }
+
+    fn poll_core_log(&mut self) {
+        let line = self.core.log_tail(1);
+        let line = line.trim();
+        if !line.is_empty() && self.session.logs.last().is_none_or(|last| last != line) {
+            self.session.append_log(format!("[java] {line}"));
+        }
+    }
+
+    fn control_panel(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        ui.add_space(4.0);
+        ui.label(RichText::new(self.translations.player_label.clone()).small().color(ACCENT));
+        ui.add_space(4.0);
+        let position = self.session.coordinates_at().map_or_else(
+            || self.translations.not_in_world.clone().to_owned(),
+            |pos| format!("({}, {})", pos.x, pos.y),
+        );
+        ui.label(
+            RichText::new(position)
+                .font(FontId::proportional(24.0))
+                .strong(),
+        );
+        if let Some(player) = &self.session.player {
+            ui.label(
+                RichText::new(&player.id)
+                    .small()
+                    .color(muted(self.config.theme)),
+            );
+        }
+
+        ui.add_space(18.0);
+        ui.separator();
+        ui.add_space(14.0);
+        ui.label(RichText::new(self.translations.block_palette_label.clone()).small().color(ACCENT));
+        ui.add_space(8.0);
+        ui.horizontal_wrapped(|ui| {
+            for block in BlockType::PLACEABLE {
+                let selected = self.session.selected_block == block;
+                let fill = if selected {
+                    accent_fill(self.config.theme)
+                } else {
+                    card_fill(self.config.theme)
+                };
+                let label = RichText::new(block.label()).color(if selected {
+                    Color32::BLACK
+                } else {
+                    text_color(self.config.theme)
+                });
+                if ui
+                    .add(Button::new(label).fill(fill).corner_radius(8.0))
+                    .clicked()
+                {
+                    self.session.select_block(block);
+                }
+            }
+        });
+
+        ui.add_space(20.0);
+        ui.label(RichText::new(self.translations.movement_label.clone()).small().color(ACCENT));
+        ui.add_space(8.0);
+        ui.vertical_centered(|ui| {
+            if ui
+                .add_enabled(
+                    self.session.is_joined() && !self.busy,
+                    Button::new("↑  北").min_size(Vec2::new(118.0, 38.0)),
+                )
+                .clicked()
+            {
+                self.enqueue_world_action(WorldAction::Move(MoveDirection::North), ctx);
+            }
+            ui.horizontal(|ui| {
+                if ui
+                    .add_enabled(
+                        self.session.is_joined() && !self.busy,
+                        Button::new("← 西").min_size(Vec2::new(92.0, 38.0)),
+                    )
+                    .clicked()
+                {
+                    self.enqueue_world_action(WorldAction::Move(MoveDirection::West), ctx);
+                }
+                if ui
+                    .add_enabled(
+                        self.session.is_joined() && !self.busy,
+                        Button::new("东 →").min_size(Vec2::new(92.0, 38.0)),
+                    )
+                    .clicked()
+                {
+                    self.enqueue_world_action(WorldAction::Move(MoveDirection::East), ctx);
+                }
+            });
+            if ui
+                .add_enabled(
+                    self.session.is_joined() && !self.busy,
+                    Button::new("↓  南").min_size(Vec2::new(118.0, 38.0)),
+                )
+                .clicked()
+            {
+                self.enqueue_world_action(WorldAction::Move(MoveDirection::South), ctx);
+            }
+        });
+
+        ui.add_space(18.0);
+        ui.separator();
+        ui.add_space(12.0);
+        ui.label(RichText::new(self.translations.server_label.clone()).small().color(ACCENT));
+        if let Some(info) = &self.session.info {
+            ui.label(format!("{} · v{}", info.server_name, info.server_version));
+            ui.label(
+                RichText::new(format!("protocol {}", info.protocol_version))
+                    .small()
+                    .color(muted(self.config.theme)),
+            );
+        } else {
+            ui.label(RichText::new(self.translations.not_handshaked.clone()).color(muted(self.config.theme)));
+        }
+        ui.add_space(6.0);
+        ui.label(
+            RichText::new(format!("{} modules", self.session.mods.len())).small()
+                .small()
+                .color(muted(self.config.theme)),
+        );
+        for module in self.session.mods.iter().take(4) {
+            ui.label(RichText::new(format!("· {} {}", module.name, module.state)).small());
+        }
+
+        ui.add_space(18.0);
+        ui.separator();
+        ui.add_space(12.0);
+        ui.label(RichText::new(self.translations.event_log_label.clone()).small().color(ACCENT));
+        egui::ScrollArea::vertical()
+            .max_height(150.0)
+            .stick_to_bottom(true)
+            .show(ui, |ui| {
+                if self.session.logs.is_empty() {
+                    ui.label(
+                        RichText::new("等待连接事件…")
+                            .small()
+                            .color(muted(self.config.theme)),
+                    );
+                }
+                for line in &self.session.logs {
+                    ui.label(RichText::new(line).small().color(muted(self.config.theme)));
+                }
+            });
+    }
+
+    fn world_panel(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        ui.horizontal(|ui| {
+            ui.vertical(|ui| {
+                ui.label(RichText::new(self.translations.world_view_label.clone()).small().color(ACCENT));
+                ui.label(
+                    RichText::new(if self.session.is_ready() {
+                        self.translations.click_to_place_destroy.clone()
+                    } else {
+                        self.translations.waiting_for_world.clone()
+                    })
+                    .small()
+                    .color(muted(self.config.theme)),
+                );
+            });
+            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                ui.label(
+                    RichText::new(format!(
+                        "{} × {}",
+                        self.session.world.width, self.session.world.height
+                    ))
+                    .monospace()
+                    .color(muted(self.config.theme)),
+                );
+            });
+        });
+        ui.add_space(18.0);
+
+        let available = ui.available_size();
+        let world = self.session.world.clone();
+        if world.width == 0 || world.height == 0 {
+            Frame::new()
+                .fill(card_fill(self.config.theme))
+                .corner_radius(18.0)
+                .inner_margin(Margin::same(24))
+                .show(ui, |ui| {
+                    ui.set_min_size(Vec2::new(available.x, available.y.min(480.0)));
+                    ui.centered_and_justified(|ui| {
+                        ui.label(RichText::new(self.translations.world_not_loaded.clone()).color(muted(self.config.theme)));
+                    });
+                });
+            return;
+        }
+
+        let reserve = 22.0;
+        let cell = ((available.x - reserve) / world.width as f32)
+            .min((available.y - reserve) / world.height as f32)
+            .clamp(8.0, 34.0);
+        let grid_size = Vec2::new(cell * world.width as f32, cell * world.height as f32);
+
+        Frame::new()
+            .fill(card_fill(self.config.theme))
+            .corner_radius(18.0)
+            .inner_margin(Margin::same(12))
+            .show(ui, |ui| {
+                ui.centered_and_justified(|ui| {
+                    let (rect, response) = ui.allocate_exact_size(grid_size, Sense::click());
+                    let painter = ui.painter_at(rect);
+                    let mut clicked = None;
+                    for y in 0..world.height {
+                        for x in 0..world.width {
+                            let min = rect.min + Vec2::new(x as f32 * cell, y as f32 * cell);
+                            let cell_rect = egui::Rect::from_min_size(min, Vec2::splat(cell));
+                            let block = world.block_at(x, y);
+                            let color = block_color(block, self.config.theme);
+                            painter.rect_filled(
+                                cell_rect.shrink(0.7),
+                                CornerRadius::same(2),
+                                color,
+                            );
+                            if response.hovered()
+                                && cell_rect.contains(
+                                    ui.input(|i| i.pointer.hover_pos().unwrap_or_default()),
+                                )
+                            {
+                                painter.rect_stroke(
+                                    cell_rect.shrink(0.7),
+                                    CornerRadius::same(2),
+                                    Stroke::new(1.5, ACCENT),
+                                    StrokeKind::Inside,
+                                );
+                            }
+                            if let Some(player) = self.session.player.as_ref()
+                                && player.pos.x == x
+                                && player.pos.y == y
+                            {
+                                painter.circle_filled(
+                                    cell_rect.center(),
+                                    cell.max(3.0) * 0.26,
+                                    ACCENT_WARM,
+                                );
+                            }
+                        }
+                    }
+                    if response.clicked()
+                        && let Some(pos) = response.interact_pointer_pos()
+                    {
+                        let local = pos - rect.min;
+                        let x = (local.x / cell).floor() as usize;
+                        let y = (local.y / cell).floor() as usize;
+                        if x < world.width && y < world.height {
+                            clicked = Some((x, y, ui.input(|i| i.pointer.secondary_down())));
+                        }
+                    }
+                    if let Some((x, y, secondary)) = clicked {
+                        let action = if secondary {
+                            WorldAction::Break { x, y }
+                        } else {
+                            WorldAction::Place { x, y }
+                        };
+                        self.enqueue_world_action(action, ctx);
+                    }
+                });
+            });
+
+        ui.add_space(12.0);
+        Frame::new()
+            .fill(card_fill(self.config.theme))
+            .corner_radius(10.0)
+            .inner_margin(Margin::symmetric(14, 9))
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new(&self.session.message).small());
+                    if self
+                        .saved_flash
+                        .is_some_and(|instant| instant.elapsed() < Duration::from_secs(2))
+                    {
+                        ui.label(RichText::new("✓ 已保存").small().color(SUCCESS));
+                    }
+                });
+            });
+    }
+
+    fn settings_panel(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        ui.label(RichText::new(self.translations.core_and_network.clone()).small().color(ACCENT));
+        ui.add_space(8.0);
+        egui::Grid::new("core-settings")
+            .num_columns(2)
+            .spacing([16.0, 10.0])
+            .show(ui, |ui| {
+                ui.label(self.translations.java_path.clone());
+                ui.text_edit_singleline(&mut self.settings_draft.java_path);
+                ui.end_row();
+                ui.label(self.translations.server_jar.clone());
+                ui.text_edit_singleline(&mut self.settings_draft.server_jar);
+                ui.end_row();
+                ui.label(self.translations.address.clone());
+                ui.text_edit_singleline(&mut self.settings_draft.server_host);
+                ui.end_row();
+                ui.label(self.translations.port.clone());
+                ui.add(egui::DragValue::new(&mut self.settings_draft.server_port).range(1..=65535));
+                ui.end_row();
+                ui.label(self.translations.save_file.clone());
+                ui.text_edit_singleline(&mut self.settings_draft.save_file);
+                ui.end_row();
+                ui.label(self.translations.mods_dir.clone());
+                ui.text_edit_singleline(&mut self.settings_draft.mods_dir);
+                ui.end_row();
+                ui.label(self.translations.auto_save_seconds.clone());
+                ui.add(
+                    egui::DragValue::new(&mut self.settings_draft.autosave_seconds).range(0..=3600),
+                );
+                ui.end_row();
+                ui.label(self.translations.manage_java.clone());
+                ui.checkbox(
+                    &mut self.settings_draft.manage_server,
+                    self.translations.managed_by_rust.clone(),
+                );
+                ui.end_row();
+            });
+        ui.add_space(14.0);
+        ui.label(
+            RichText::new(self.translations.config_desc.clone())
+                .small()
+                .color(muted(self.config.theme)),
+        );
+        ui.add_space(16.0);
+        ui.horizontal(|ui| {
+            if ui.button(self.translations.save_settings.clone()).clicked() {
+                self.apply_draft(ctx);
+            }
+            if ui.button(self.translations.restore_defaults.clone()).clicked() {
+                self.settings_draft = LauncherConfig::default();
+            }
+            if ui.button(self.translations.close.clone()).clicked() {
+                self.settings_open = false;
+            }
+        });
+    }
+}
+
+fn install_fonts(ctx: &egui::Context) {
+    let mut fonts = egui::FontDefinitions::default();
+    let mut families = vec![
+        "/System/Library/Fonts/PingFang.ttc",
+        "/System/Library/Fonts/Hiragino Sans GB.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "C:\\Windows\\Fonts\\msyh.ttc",
+    ];
+    for path in families.drain(..) {
+        if let Ok(bytes) = std::fs::read(path) {
+            fonts.font_data.insert(
+                "tapmc-cjk".to_owned(),
+                std::sync::Arc::new(egui::FontData::from_owned(bytes)),
+            );
+            fonts
+                .families
+                .entry(FontFamily::Proportional)
+                .or_default()
+                .insert(0, "tapmc-cjk".to_owned());
+            break;
+        }
+    }
+    ctx.set_fonts(fonts);
+}
+
+fn apply_theme(ctx: &egui::Context, theme: ThemePreference) {
+    let mut visuals = match theme {
+        ThemePreference::Dark => egui::Visuals::dark(),
+        ThemePreference::Light => egui::Visuals::light(),
+    };
+    visuals.panel_fill = main_fill(theme);
+    visuals.window_fill = card_fill(theme);
+    visuals.override_text_color = Some(text_color(theme));
+    visuals.widgets.inactive.bg_fill = card_fill(theme);
+    visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, text_color(theme));
+    visuals.widgets.hovered.bg_fill = hover_fill(theme);
+    visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, ACCENT);
+    visuals.selection.bg_fill = ACCENT;
+    visuals.selection.stroke = Stroke::new(1.0, Color32::BLACK);
+    ctx.set_visuals(visuals);
+}
+
+fn text_color(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(228, 237, 245),
+        ThemePreference::Light => Color32::from_rgb(28, 37, 48),
+    }
+}
+
+fn muted(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(132, 151, 170),
+        ThemePreference::Light => Color32::from_rgb(91, 105, 120),
+    }
+}
+
+fn main_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(13, 19, 27),
+        ThemePreference::Light => Color32::from_rgb(244, 247, 249),
+    }
+}
+
+fn header_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(17, 25, 36),
+        ThemePreference::Light => Color32::from_rgb(255, 255, 255),
+    }
+}
+
+fn side_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(18, 27, 39),
+        ThemePreference::Light => Color32::from_rgb(235, 241, 245),
+    }
+}
+
+fn footer_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(10, 15, 22),
+        ThemePreference::Light => Color32::from_rgb(226, 233, 238),
+    }
+}
+
+fn card_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(24, 35, 48),
+        ThemePreference::Light => Color32::from_rgb(255, 255, 255),
+    }
+}
+
+fn hover_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => Color32::from_rgb(34, 49, 66),
+        ThemePreference::Light => Color32::from_rgb(222, 232, 239),
+    }
+}
+
+fn accent_fill(theme: ThemePreference) -> Color32 {
+    match theme {
+        ThemePreference::Dark => ACCENT,
+        ThemePreference::Light => Color32::from_rgb(124, 211, 247),
+    }
+}
+
+fn block_color(block: BlockType, theme: ThemePreference) -> Color32 {
+    match block {
+        BlockType::Air => match theme {
+            ThemePreference::Dark => CELL_AIR_DARK,
+            ThemePreference::Light => CELL_AIR_LIGHT,
+        },
+        BlockType::Dirt => CELL_DIRT,
+        BlockType::Stone => CELL_STONE,
+        BlockType::Water => CELL_WATER,
+        BlockType::Wood => CELL_WOOD,
+    }
+}
+
+enum WorldAction {
+    Move(MoveDirection),
+    Place { x: usize, y: usize },
+    Break { x: usize, y: usize },
+}
+
+impl eframe::App for TapMcApp {
+    fn logic(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.drain_tasks(ctx);
+        self.poll_core_log();
+        if self.busy || self.session.stage == ConnectionStage::Connecting {
+            ctx.request_repaint_after(Duration::from_millis(120));
+        }
+    }
+
+    fn ui(&mut self, root: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = root.ctx().clone();
+
+        egui::Panel::top("topbar")
+            .frame(
+                Frame::new()
+                    .fill(header_fill(self.config.theme))
+                    .inner_margin(Margin::same(18)),
+            )
+            .show(root, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(
+                        RichText::new(self.translations.window_title.clone())
+                            .font(FontId::proportional(27.0))
+                            .strong(),
+                    );
+                    ui.add_space(8.0);
+                    ui.label(RichText::new(self.translations.native_launcher.clone()).small().color(ACCENT));
+                    ui.add_space(16.0);
+                    let status = self.session.stage.label();
+                    let status_color = match self.session.stage {
+                        ConnectionStage::Ready => SUCCESS,
+                        ConnectionStage::Failed => DANGER,
+                        ConnectionStage::Connecting => ACCENT_WARM,
+                        ConnectionStage::Idle => muted(self.config.theme),
+                    };
+                    ui.label(RichText::new(status).color(status_color).strong());
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        if ui
+                            .button(RichText::new(self.config.theme.label()))
+                            .clicked()
+                        {
+                            self.config.theme = self.config.theme.toggled();
+                            apply_theme(&ctx, self.config.theme);
+                            let _ = self.config.save();
+                        }
+                        if ui.button(self.translations.settings_button.clone()).clicked() {
+                            self.settings_draft = self.config.clone();
+                            self.settings_open = true;
+                        }
+                        if self.session.stage == ConnectionStage::Ready {
+                            if ui.button(self.translations.disconnect_button.clone()).clicked() {
+                                self.disconnect();
+                            }
+                        } else if ui
+                            .add_enabled(!self.busy, Button::new("启动并连接"))
+                            .clicked()
+                        {
+                            self.launch(&ctx);
+                        }
+                    });
+                });
+            });
+
+        egui::Panel::right("control")
+            .resizable(false)
+            .exact_size(320.0)
+            .frame(
+                Frame::new()
+                    .fill(side_fill(self.config.theme))
+                    .inner_margin(Margin::same(18)),
+            )
+            .show(root, |ui| {
+                self.control_panel(ui, &ctx);
+            });
+
+        egui::Panel::bottom("status")
+            .frame(
+                Frame::new()
+                    .fill(footer_fill(self.config.theme))
+                    .inner_margin(Margin::symmetric(18, 8)),
+            )
+            .show(root, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new("●").color(
+                        if self.session.stage == ConnectionStage::Ready {
+                            SUCCESS
+                        } else {
+                            muted(self.config.theme)
+                        },
+                    ));
+                    ui.label(RichText::new(&self.status_line).small());
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        if self.busy {
+                            ui.spinner();
+                        }
+                        ui.label(
+                            RichText::new(format!(
+                                "Java PID {}",
+                                self.core
+                                    .pid()
+                                    .map_or("--".to_owned(), |pid| pid.to_string())
+                            ))
+                            .small()
+                            .color(muted(self.config.theme)),
+                        );
+                    });
+                });
+            });
+
+        egui::CentralPanel::default()
+            .frame(
+                Frame::new()
+                    .fill(main_fill(self.config.theme))
+                    .inner_margin(Margin::same(20)),
+            )
+            .show(root, |ui| self.world_panel(ui, &ctx));
+
+        if self.settings_open {
+            let mut open = self.settings_open;
+            egui::Window::new("启动器设置")
+                .open(&mut open)
+                .resizable(false)
+                .collapsible(false)
+                .default_width(560.0)
+                .show(&ctx, |ui| self.settings_panel(ui, &ctx));
+            self.settings_open = open;
+        }
+    }
+}
+
+impl Drop for TapMcApp {
+    fn drop(&mut self) {
+        if let Some(client) = self.client.take() {
+            client.close();
+        }
+        self.core.stop();
+    }
+}

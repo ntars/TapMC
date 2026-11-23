@@ -12,6 +12,8 @@ subprojects {
     version = "0.1.0"
 
     repositories {
+        mavenLocal()
+        // 先使用本地仓库尝试
         mavenCentral()
     }
 

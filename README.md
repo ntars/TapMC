@@ -75,7 +75,72 @@
 | 单线程串行 | 并发连接数受限于单核处理能力 | 骨架阶段的正确性优先；扩展需在 `server` 层引入会话队列 |
 | 二维世界 | 无高度、无区块、无光照 | 路线图第 4 项，影响面最大，刻意排最后 |
 
----
+### 2.7 技术架构
+
+**核心思路**：Java 实现游戏规则（唯一真相来源），Flutter 做全部前端（触屏优化、多端覆盖），两者通过 JSON-RPC over WebSocket 通信。
+
+**技术栈**：
+- Flutter 前端（七端覆盖：Android/iOS/Windows/macOS/Linux/Web/HarmonyOS）
+- Java 21 后端（唯一游戏规则 authority）
+- JSON-RPC 2.0 over WebSocket 协议
+- Gradle 构建系统
+
+**架构优势**：
+- 两端解耦：协议是唯一契约，可独立演进
+- 跨平台：一套 Flutter 代码跑全端
+- 易调试：文本协议日志可读
+
+**运行方式**：
+```bash
+# 启动后端服务
+cd core/backend && ./gradlew :server:run
+
+# 启动 Flutter 前端
+cd core/frontend && flutter run
+```
+
+
+**技术栈**：
+- Flutter 前端（七端覆盖：Android/iOS/Windows/macOS/Linux/Web/HarmonyOS）
+- Java 21 后端（唯一游戏规则 authority）
+- JSON-RPC 2.0 over WebSocket 协议
+- Gradle 构建系统
+
+**架构优势**：
+- 两端解耦：协议是唯一契约，可独立演进
+- 跨平台：一套 Flutter 代码跑全端
+- 易调试：文本协议日志可读
+
+**运行方式**：
+```bash
+# 启动后端服务
+cd core/backend && ./gradlew :server:run
+
+# 启动 Flutter 前端
+cd core/frontend && flutter run
+```
+
+
+**技术栈**：
+- Flutter 前端（七端覆盖：Android/iOS/Windows/macOS/Linux/Web/HarmonyOS）
+- Java 21 后端（唯一游戏规则 authority）
+- JSON-RPC 2.0 over WebSocket 协议
+- Gradle 构建系统
+
+**架构优势**：
+- 两端解耦：协议是唯一契约，可独立演进
+- 跨平台：一套 Flutter 代码跑全端
+- 易调试：文本协议日志可读
+
+**运行方式**：
+```bash
+# 启动后端服务
+cd core/backend && ./gradlew :server:run
+
+# 启动 Flutter 前端
+cd core/frontend && flutter run
+```
+
 
 ## 三、核心功能
 
@@ -198,24 +263,92 @@ java -jar server/build/libs/server-0.1.0-all.jar --no-save          # 纯内存�
 升级即替换二进制或安装包；世界数据在 `world.json`，升级不会覆盖它（读档尺寸不符时才回退新地图）。
 卸载删除安装目录即可，不写系统位置；`world.json` 是玩家数据，按需自行保留或删除。
 
-### 7.5 模组动态加载
+### 7.7 部署
 
-把实现了 `cn.ntars.tapmc.mod.TapMcMod` SPI 的 jar 放到 `./mods/`，启动服务端即自动加载（仓库自带示例在 `examples/mods/`，复制过去才会生效）：
+#### 后端服务部署
 
 ```bash
-java -jar dist/server/server-0.1.0-all.jar --mods ./mods --no-save
-# 试跑示例：cp examples/mods/guard-mod.jar ./mods/
+cd core/backend && ./gradlew :server:fatJar
+java -jar server/build/libs/server-0.1.0-all.jar --port 8777
 ```
 
-每个 jar 用独立子 `URLClassLoader` 加载，jar 内可自带同名依赖；卸载时关闭加载器释放文件句柄。
-`system.mods` 会列出动态模组与内置模组，状态为 `ACTIVE` / `FAILED` / `DISABLED`。
-实测：把 `examples/mods/guard-mod.jar` 复制进 `./mods/` 后，`system.mods` 出现 `test.guard`，放置 `WOOD` 返回 `-32004`（被模组拦下）；移走 jar 后不再拦截。示例默认不放在 `./mods/`，避免影响标准验收。
-注意：模组与服务端同进程运行，没有安全沙箱，只加载可信 jar。
+服务默认监听 `127.0.0.1:8777`，并把世界存到启动目录下的 `world.json`。换路径或关掉存档：
 
----
+```bash
+java -jar server/build/libs/server-0.1.0-all.jar --save-file ~/.tapmc/world.json --autosave 30
+java -jar server/build/libs/server-0.1.0-all.jar --no-save          # 纯内存，退出即弃
+```
+
+#### 前端部署
+
+前端产物用 `flutter build <platform>` 生成，按各平台常规方式分发：
+
+```bash
+# Web（跨平台）
+flutter build web
+
+# Android APK（需要 Android SDK）
+flutter build apk
+
+# iOS（需要 macOS + Xcode）
+flutter build ios --no-codesign
+```
 
 
-### 7.6 容器化
+#### 后端服务部署
+
+```bash
+cd core/backend && ./gradlew :server:fatJar
+java -jar server/build/libs/server-0.1.0-all.jar --port 8777
+```
+
+服务默认监听 `127.0.0.1:8777`，并把世界存到启动目录下的 `world.json`。换路径或关掉存档：
+
+```bash
+java -jar server/build/libs/server-0.1.0-all.jar --save-file ~/.tapmc/world.json --autosave 30
+java -jar server/build/libs/server-0.1.0-all.jar --no-save          # 纯内存，退出即弃
+```
+
+#### 前端部署
+
+前端产物用 `flutter build <platform>` 生成，按各平台常规方式分发：
+
+```bash
+# Android APK
+flutter build apk
+
+# iOS
+flutter build ios --no-codesign
+
+# Windows
+flutter build windows
+
+# macOS
+flutter build macos
+
+# Linux
+flutter build linux
+
+# Web
+flutter build web
+```
+
+### 7.7 运行与调试
+
+完整启动流程（两步）：
+
+```bash
+# 终端 1：启动后端
+cd core/backend && ./gradlew :server:run
+
+# 终端 2：启动 Flutter 前端
+cd core/frontend && flutter run -d chrome  # 或 android, windows, macos 等
+```
+
+常用调试选项：
+- `--no-enable-impeller`：关闭 Impeller 渲染
+- `--current-user`：模拟当前用户权限
+
 
 仓库提供 `Dockerfile` 与 `docker-compose.yml`：服务端在容器内监听 `0.0.0.0:8777`，
 存档与模组目录挂卷；Web 静态站点由 nginx 在 `8080` 端口提供。

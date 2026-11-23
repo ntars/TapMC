@@ -13,7 +13,7 @@ class TapMcTheme {
 
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(seedColor: _seed);
-    return _build(scheme);
+    return _build(scheme, Brightness.light);
   }
 
   static ThemeData dark() {
@@ -21,19 +21,22 @@ class TapMcTheme {
       seedColor: _seed,
       brightness: Brightness.dark,
     );
-    return _build(scheme);
+    return _build(scheme, Brightness.dark);
   }
 
-  static ThemeData _build(ColorScheme scheme) {
+  static ThemeData _build(ColorScheme scheme, Brightness brightness) {
     return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
       colorScheme: scheme,
-      // 桌面端用紧凑密度，手机端保持默认触摸尺寸。
       visualDensity: VisualDensity.adaptivePlatformDensity,
+      
+      // App Bar 主题
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
+        scrolledUnderElevation: brightness == Brightness.dark ? 2 : 0.5,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontSize: 17,
@@ -41,25 +44,62 @@ class TapMcTheme {
           color: scheme.onSurface,
         ),
       ),
+      
+      // 卡片主题
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: brightness == Brightness.dark ? 2 : 1,
         color: scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
+      
+      // Chip 主题
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
         side: BorderSide(color: scheme.outlineVariant, width: 0.5),
+        labelStyle: TextStyle(fontSize: 13),
       ),
+      
+      // 按钮主题
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
+      ),
+      
+      // 输入框主题
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: scheme.outlineVariant, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: scheme.outlineVariant, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+        filled: true,
+        fillColor: brightness == Brightness.dark 
+          ? scheme.surfaceContainerHigh 
+          : Colors.white,
+      ),
+      
+      // 列表主题
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        tileColor: scheme.surfaceContainerLow,
+        selectedTileColor: scheme.primaryContainer,
       ),
     );
   }

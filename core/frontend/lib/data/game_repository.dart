@@ -13,6 +13,12 @@ class GameRepository {
 
   final RpcClient _rpc;
 
+  /// 公开 call 方法给需要直接调用协议方法的 UI 层使用
+  Future<T> call<T>(String method, {Map<String, dynamic>? params}) async {
+    final result = await _rpc.call<T>(method, params: params);
+    return result;
+  }
+
   /// 事件流，已解析成领域对象。
   Stream<WorldChange> get worldChanges => _rpc.events
       .where((event) => event.method == Methods.eventWorldChanged)

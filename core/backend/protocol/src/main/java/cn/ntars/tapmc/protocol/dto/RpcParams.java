@@ -36,12 +36,17 @@ public final class RpcParams {
     @SerializedName("playerId")
     private final String playerId;
 
-    public RpcParams(Integer x, Integer y, String block, String direction, String playerId) {
+/** 离线玩家名。仅 loginOffline 使用。 */
+    @SerializedName("name")
+    private final String name;
+
+    public RpcParams(Integer x, Integer y, String block, String direction, String playerId, String name) {
         this.x = x;
         this.y = y;
         this.block = block;
         this.direction = direction;
         this.playerId = playerId;
+        this.name = name;
     }
 
     public Integer getX() {
@@ -62,5 +67,9 @@ public final class RpcParams {
 
     public String getPlayerId() {
         return playerId;
+    }
+
+    public String getName() {
+        return name;
     }
 }

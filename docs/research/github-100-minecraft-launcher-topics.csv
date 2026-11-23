@@ -1,0 +1,101 @@
+仓库,编号,标题,URL,分类,关联功能,影响,优先级
+PojavLauncherTeam/PojavLauncher,1948,"Mod ""X"" doesn't work",https://github.com/PojavLauncherTeam/PojavLauncher/issues/1948,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+PrismLauncher/PrismLauncher,1055,"Add ability to group mods or setting tags for mods for better organizing",https://github.com/PrismLauncher/PrismLauncher/issues/1055,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PojavLauncherTeam/PojavLauncher,668,"Free JVM Launch arguments that can boost your FPS..",https://github.com/PojavLauncherTeam/PojavLauncher/issues/668,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+gorilla-devs/GDLauncher,1308,"Quilt support",https://github.com/gorilla-devs/GDLauncher/issues/1308,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+minecraft-linux/mcpelauncher-manifest,1741,"Animations not working",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/1741,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PolyMC/PolyMC,7,"[Feature Request] Have PolyMC manage its own Java version",https://github.com/PolyMC/PolyMC/issues/7,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PojavLauncherTeam/PojavLauncher,632,"Microsoft login error",https://github.com/PojavLauncherTeam/PojavLauncher/issues/632,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PojavLauncherTeam/PojavLauncher,2349,"[Microsoft Login Error] <Can't login with Microsoft Account>",https://github.com/PojavLauncherTeam/PojavLauncher/issues/2349,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PrismLauncher/PrismLauncher,38,"(symbolic/soft link) shared resourcepaks / shaderpacks / other folders",https://github.com/PrismLauncher/PrismLauncher/issues/38,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,154,"User-defined Folders/Categories for the 'Mods' tab",https://github.com/PrismLauncher/PrismLauncher/issues/154,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,2302,"Microsoft login issue",https://github.com/PrismLauncher/PrismLauncher/issues/2302,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+PrismLauncher/PrismLauncher,250,"Launch multiple processes of the same instance",https://github.com/PrismLauncher/PrismLauncher/issues/250,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,1644,"Implement Game Mode on macOS Sonoma",https://github.com/PrismLauncher/PrismLauncher/issues/1644,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+PojavLauncherTeam/PojavLauncher,4378,"[BUG] wont login on my microsoft account",https://github.com/PojavLauncherTeam/PojavLauncher/issues/4378,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PrismLauncher/PrismLauncher,864,"Ease of server making",https://github.com/PrismLauncher/PrismLauncher/issues/864,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+minecraft-linux/mcpelauncher-manifest,374,"fix 1.16.20.3",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/374,平台与兼容,Linux Wayland/X11、macOS Apple Silicon、Windows Dark Theme、Android iOS,特定系统崩溃或无显示,P2
+PrismLauncher/PrismLauncher,232,"Discord RPC integration?",https://github.com/PrismLauncher/PrismLauncher/issues/232,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,4670,"Suddenly telling me my account does not own Minecraft",https://github.com/MultiMC/Launcher/issues/4670,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+minecraft-linux/mcpelauncher-manifest,1158,"[Feature Request] Add 1.21.90 support",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/1158,平台与兼容,Linux Wayland/X11、macOS Apple Silicon、Windows Dark Theme、Android iOS,特定系统崩溃或无显示,P2
+minecraft-linux/mcpelauncher-manifest,1360,"minecraft license/google error",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/1360,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+PrismLauncher/PrismLauncher,1398,"Gamescope integration",https://github.com/PrismLauncher/PrismLauncher/issues/1398,界面与体验,深浅主题、中文支持、HiDPI 缩放、控制器映射,可访问性差,P2
+PojavLauncherTeam/PojavLauncher,115,"GPlay Publishing",https://github.com/PojavLauncherTeam/PojavLauncher/issues/115,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+PrismLauncher/PrismLauncher,5661,"on macOS 27, the selection buttons are invisible",https://github.com/PrismLauncher/PrismLauncher/issues/5661,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,175,"Instance Template",https://github.com/PrismLauncher/PrismLauncher/issues/175,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+minecraft-linux/mcpelauncher-manifest,691,"1.19.30+ is not compatible",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/691,平台与兼容,Linux Wayland/X11、macOS Apple Silicon、Windows Dark Theme、Android iOS,特定系统崩溃或无显示,P2
+ZalithLauncher/ZalithLauncher2,378,"Allow to use gamepad mods",https://github.com/ZalithLauncher/ZalithLauncher2/issues/378,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+PrismLauncher/PrismLauncher,5616,"Removed profile (account)",https://github.com/PrismLauncher/PrismLauncher/issues/5616,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+PrismLauncher/PrismLauncher,101,"Add full support for downloading versions of Minecraft from Omniarchive's collection",https://github.com/PrismLauncher/PrismLauncher/issues/101,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PrismLauncher/PrismLauncher,791,"Controller support in launcher",https://github.com/PrismLauncher/PrismLauncher/issues/791,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+PrismLauncher/PrismLauncher,880,"Group mods into folders and select/deselect them in instances",https://github.com/PrismLauncher/PrismLauncher/issues/880,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,882,"Unlisted Modrinth pack support",https://github.com/PrismLauncher/PrismLauncher/issues/882,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,953,"Update modpack from zip",https://github.com/PrismLauncher/PrismLauncher/issues/953,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,719,"[Suggestion] Move to Codeberg",https://github.com/PrismLauncher/PrismLauncher/issues/719,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+PrismLauncher/PrismLauncher,4198,"forge 1.20.1 minecraft does not start with this error.",https://github.com/PrismLauncher/PrismLauncher/issues/4198,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+Lodestone-Team/lodestone,440,"Dead project?",https://github.com/Lodestone-Team/lodestone/issues/440,下载与更新,CurseForge、Modrinth、版本镜像、断点续传,包损坏或下载中断,P1
+PrismLauncher/PrismLauncher,183,"""Big Picture"" mode for Prism",https://github.com/PrismLauncher/PrismLauncher/issues/183,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+MultiMC/Launcher,3394,"Feature Request:  Authlib Support",https://github.com/MultiMC/Launcher/issues/3394,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+MultiMC/Launcher,4013,"Automatically detect the java version each Minecraft version needs upon instance creation.",https://github.com/MultiMC/Launcher/issues/4013,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PrismLauncher/PrismLauncher,1146,"[RFC] Sandboxing the launcher and/or invidual instances by default",https://github.com/PrismLauncher/PrismLauncher/issues/1146,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+gorilla-devs/GDLauncher,1491,"Error while downloading game files for new instance 1.19.3",https://github.com/gorilla-devs/GDLauncher/issues/1491,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,1811,"[Idea] Adding Download Option for Curse Modpacks",https://github.com/MultiMC/Launcher/issues/1811,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,4065,"Asset files keep getting redownloaded",https://github.com/PrismLauncher/PrismLauncher/issues/4065,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,1057,"Auto-update mechanism",https://github.com/PrismLauncher/PrismLauncher/issues/1057,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,5838,"Share Modpacks through Modrinth",https://github.com/PrismLauncher/PrismLauncher/issues/5838,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,2205,"Implement easier copying of settings between instances.",https://github.com/PrismLauncher/PrismLauncher/issues/2205,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,698,"(M1/M2 Apple Silicon) Colours are inverted on older Minecraft versions",https://github.com/PrismLauncher/PrismLauncher/issues/698,平台与兼容,Linux Wayland/X11、macOS Apple Silicon、Windows Dark Theme、Android iOS,特定系统崩溃或无显示,P2
+Meloong-Git/PCL,3316,"无法正确解锁神秘紫",https://github.com/Meloong-Git/PCL/issues/3316,日志与诊断,崩溃报告、日志导出、内存分析,问题难以定位,P2
+MultiMC/Launcher,60,"Add ability to run server instance",https://github.com/MultiMC/Launcher/issues/60,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,552,"Move instance metadata (playtime, last time played) to a separate file for easier sync across multiple devices",https://github.com/PrismLauncher/PrismLauncher/issues/552,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,3386,"[Feature Request] “Offline Mode” for Prism Launcher",https://github.com/PrismLauncher/PrismLauncher/issues/3386,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+Meloong-Git/PCL,7556,"在使用Windows自带的解压软件后，进行解压，发现pcl无法打开",https://github.com/Meloong-Git/PCL/issues/7556,下载与更新,CurseForge、Modrinth、版本镜像、断点续传,包损坏或下载中断,P1
+PrismLauncher/PrismLauncher,434,"FTB Modpack Update",https://github.com/PrismLauncher/PrismLauncher/issues/434,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,42,"Ability to share resourcepacks/saves/screenshots between instances",https://github.com/MultiMC/Launcher/issues/42,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,40,"Minecraft Forge install window isn't listing anything",https://github.com/MultiMC/Launcher/issues/40,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+Meloong-Git/PCL,9154,"Windows7无法连接Curseforge的资源",https://github.com/Meloong-Git/PCL/issues/9154,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,5716,"""Minecraft Java profile acquisition failed.""",https://github.com/MultiMC/Launcher/issues/5716,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+ATLauncher/ATLauncher,715,"Program demands interaction with invisible subwindow",https://github.com/ATLauncher/ATLauncher/issues/715,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+Meloong-Git/PCL,131,"暗黑模式",https://github.com/Meloong-Git/PCL/issues/131,界面与体验,深浅主题、中文支持、HiDPI 缩放、控制器映射,可访问性差,P2
+ATLauncher/ATLauncher,373,"Linux graphical/display issues",https://github.com/ATLauncher/ATLauncher/issues/373,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+ATLauncher/ATLauncher,658,"Native Wayland ",https://github.com/ATLauncher/ATLauncher/issues/658,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+minecraft-linux/mcpelauncher-manifest,1954,"Game freeze when using 1.26.40.x",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/1954,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+ZalithLauncher/ZalithLauncher2,2096,"Official support for PanVK in Zalith Launcher 2 (Kopper/Zink and Vulkan as native renderer for MC 26X)",https://github.com/ZalithLauncher/ZalithLauncher2/issues/2096,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PrismLauncher/PrismLauncher,5935,"Higher than expected Java memory usage exclusively when using Prism Launcher",https://github.com/PrismLauncher/PrismLauncher/issues/5935,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+MultiMC/Launcher,52,"Return jar mods",https://github.com/MultiMC/Launcher/issues/52,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+ATLauncher/ATLauncher,1046,"Entire window keeps getting smaller upon each loading of ATLauncher",https://github.com/ATLauncher/ATLauncher/issues/1046,界面与体验,深浅主题、中文支持、HiDPI 缩放、控制器映射,可访问性差,P2
+ATLauncher/ATLauncher,479,"easily changing a (custom) instance minecraft version",https://github.com/ATLauncher/ATLauncher/issues/479,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,4262,"Can't add microsoft acount",https://github.com/MultiMC/Launcher/issues/4262,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+MultiMC/Launcher,57,"Track FTB on XP, hard coded to AppData/Roaming?",https://github.com/MultiMC/Launcher/issues/57,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+ATLauncher/ATLauncher,713,"Buttons that spawn processes (Open Folder, Start Server, Open Websites) on linux sometimes not working",https://github.com/ATLauncher/ATLauncher/issues/713,日志与诊断,崩溃报告、日志导出、内存分析,问题难以定位,P2
+ZalithLauncher/ZalithLauncher2,2231,"My game is crashing all the time",https://github.com/ZalithLauncher/ZalithLauncher2/issues/2231,日志与诊断,崩溃报告、日志导出、内存分析,问题难以定位,P2
+MultiMC/Launcher,4429,"Use Qt6",https://github.com/MultiMC/Launcher/issues/4429,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,194,"Add the Minecraft Launcher ""News"" tab",https://github.com/PrismLauncher/PrismLauncher/issues/194,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+MultiMC/Launcher,3899,"Add support for Windows 10 Dark Theme",https://github.com/MultiMC/Launcher/issues/3899,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+ATLauncher/ATLauncher,664,"Create desktop shortcuts for instances from launcher",https://github.com/ATLauncher/ATLauncher/issues/664,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+ATLauncher/ATLauncher,449,"Barely usable on HiDPI",https://github.com/ATLauncher/ATLauncher/issues/449,界面与体验,深浅主题、中文支持、HiDPI 缩放、控制器映射,可访问性差,P2
+MultiMC/Launcher,5809,"I want to package MultiMC for Flathub.",https://github.com/MultiMC/Launcher/issues/5809,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+ATLauncher/ATLauncher,695,"Migrate to Kotlin",https://github.com/ATLauncher/ATLauncher/issues/695,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+PrismLauncher/PrismLauncher,5656,"Project ID mismatch with some mods (Modrinth)",https://github.com/PrismLauncher/PrismLauncher/issues/5656,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+MultiMC/Launcher,2945,"[Suggestion] Auth Fix for pre-Beta 1.8 using Proxy",https://github.com/MultiMC/Launcher/issues/2945,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+Moulberry/PandoraLauncher,160,"[Feature Request] Minecraft World Trimmer",https://github.com/Moulberry/PandoraLauncher/issues/160,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+minecraft-linux/mcpelauncher-manifest,2023,"No UI on Play & Settings Screen 1.8.4 MacOS Launcher",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/2023,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+HMCL-dev/HMCL,6884,"[Bug] 用户使用steamcommunity302时，登陆minecraft账号或者下载内容时会报错",https://github.com/HMCL-dev/HMCL/issues/6884,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+MultiMC/Launcher,70,"Doesn't execute on LINUX 32bit",https://github.com/MultiMC/Launcher/issues/70,下载与更新,CurseForge、Modrinth、版本镜像、断点续传,包损坏或下载中断,P1
+MultiMC/Launcher,86,"Skins messed up when running MC 1.8 dev snapshots",https://github.com/MultiMC/Launcher/issues/86,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+MultiMC/Launcher,87,"Feature to automatically update to newest snapshot",https://github.com/MultiMC/Launcher/issues/87,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+Meloong-Git/PCL,9510,"关于#9504 更新模组时，会错误地检测模组的版本导致装错",https://github.com/Meloong-Git/PCL/issues/9510,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+MultiMC/Launcher,2476,"Log search highlight color hard to discern on Windows 10/Default color theme",https://github.com/MultiMC/Launcher/issues/2476,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,1853,"[Latest Dev Build - 0.5.0-develop-913] Jar Specified is Null",https://github.com/MultiMC/Launcher/issues/1853,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+MultiMC/Launcher,39,"Does not detect java consistently",https://github.com/MultiMC/Launcher/issues/39,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+MultiMC/Launcher,84,"Missing required libraries for OpenSSL",https://github.com/MultiMC/Launcher/issues/84,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+PrismLauncher/PrismLauncher,797,"[Feature request] Minecraft Proxy Settings",https://github.com/PrismLauncher/PrismLauncher/issues/797,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+minecraft-linux/mcpelauncher-manifest,1848,"minecraft 1.26.21.1 (x86_64) game log error",https://github.com/minecraft-linux/mcpelauncher-manifest/issues/1848,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+Meloong-Git/PCL,9501,"启动游戏后启动器的启动状态结束的速度变慢",https://github.com/Meloong-Git/PCL/issues/9501,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+Meloong-Git/PCL,1834,"支持导出与导入设置",https://github.com/Meloong-Git/PCL/issues/1834,日志与诊断,崩溃报告、日志导出、内存分析,问题难以定位,P2
+MultiMC/Launcher,4765,"Support for Bedrock version only for windows",https://github.com/MultiMC/Launcher/issues/4765,Java 运行时,版本管理、JVM 参数、内存分配,启动失败或性能低下,P1
+MultiMC/Launcher,3500,"On wayland the window icon is not set correctly",https://github.com/MultiMC/Launcher/issues/3500,界面与体验,深浅主题、中文支持、HiDPI 缩放、控制器映射,可访问性差,P2
+MultiMC/Launcher,89,"Implement progress bar for copy operations",https://github.com/MultiMC/Launcher/issues/89,实例与整合包,实例创建、整合包导入导出、模板复制,配置难以迁移,P2
+PrismLauncher/PrismLauncher,6124,"CurseForge mod update check hangs after API request finishes",https://github.com/PrismLauncher/PrismLauncher/issues/6124,模组管理,Quilt/Fabric/Forge 加载器、资源包、数据包、依赖解析,版本冲突或依赖缺失,P2
+FCL-Team/FoldCraftLauncher,730,"Minecraft 1.2.5 无法启动",https://github.com/FCL-Team/FoldCraftLauncher/issues/730,账号与登录,Microsoft 账号、Yggdrasil、离线模式,无法登录导致游戏无法运行,P0
+Meloong-Git/PCL,9504,"更新模组时，会错误地检测模组的版本导致装错",https://github.com/Meloong-Git/PCL/issues/9504,日志与诊断,崩溃报告、日志导出、内存分析,问题难以定位,P2

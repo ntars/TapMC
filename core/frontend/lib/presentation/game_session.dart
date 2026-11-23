@@ -46,6 +46,7 @@ class GameSession extends ChangeNotifier {
   List<ModInfo> get mods => _mods;
   String get lastAction => _lastAction;
   BlockType get selectedBlock => _selectedBlock;
+  GameRepository get repository => _repository;
 
   /// 是否已进入世界。没进入时移动与方块操作都会被后端拒绝，UI 应禁用入口。
   bool get isJoined => _player != null;
