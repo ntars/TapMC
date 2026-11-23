@@ -469,11 +469,11 @@ TapMC/
 | 平台 | 编译 | 运行 | 说明 |
 |---|---|---|---|
 | Web | 通过 | 通过 | `flutter build web --release` 本轮退出码 0、11.5 s；冒烟脚本校验静态产物可访问 |
-| Android | 历史通过 | 待验 | 早期 `flutter build apk --debug` 产出 142 MB APK；本轮 Android Gradle 发行包 URL 网络不可达，无法重验 |
+| Android | 通过 | 通过 | 蓝叠 Android 13（SDK 33）真机实测：`flutter build apk --release --dart-define=TAPMC_SERVER_HOST=10.0.2.2` 产出 45.6 MB APK；安装后显示「已连接」，世界 24×16、位置 (12,8)、方块选择正常，后端日志确认客户端接入 |
 | macOS | 历史通过 | 历史通过 | 早期 `flutter build macos --release` 产出 40.6 MB `.app` 并实跑完成握手；本轮本机只有 Command Line Tools、缺 Xcode，`flutter build macos` 报 `Xcode not installed` |
 | iOS | 待验 | 待验 | `flutter build ios --release` 报 `Xcode not installed`；ATS 已配本地网络 |
 | Linux | 待验 | 待验 | `flutter build linux --release` 报 `only supported on Linux hosts`，本机为 macOS |
-| Windows | 待验 | 待验 | `flutter build windows --release` 报 `only supported on Windows hosts`，本机为 macOS |
+| Windows | 通过 | 通过 | Parallels Windows 11 虚拟机实测：Flutter 3.50.1 + VS 2022 Build Tools 17.14；`flutter build windows --release --dart-define=TAPMC_SERVER_HOST=10.211.55.2` 构建成功；运行后 GUI 显示「已连接」，世界/位置/控件正常，后端日志确认 `10.211.55.4` 客户端接入 |
 | HarmonyOS | 待验 | 待验 | 需鸿蒙版 Flutter SDK，见 [`core/frontend/docs/harmonyos.md`](./core/frontend/docs/harmonyos.md)；本机未安装 |
 
 「待验」表示代码与平台配置已就位、缺的是构建环境，不写成通过。本轮逐端探测命令统一为 `cd core/frontend && flutter build <platform> --release`，原始输出见各端验收结论；运行环境要求：JDK 21+、Flutter 3.32+。

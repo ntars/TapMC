@@ -421,11 +421,11 @@ Reporting channel: [SECURITY.md](./SECURITY.md).
 | Platform | Build | Run | Note |
 |---|---|---|---|
 | Web | pass | pass | `flutter build web --release` exited 0 in 11.5 s this round; smoke test checks static artifacts |
-| Android | historical pass | unverified | Earlier `flutter build apk --debug` produced a 142 MB APK; this round the Android Gradle distribution URL was unreachable, so it could not be re-verified |
+| Android | pass | pass | BlueStacks Android 13 (SDK 33) live check: `flutter build apk --release --dart-define=TAPMC_SERVER_HOST=10.0.2.2` produced a 45.6 MB APK; after install the app showed "connected", rendered the 24x16 world at (12,8), and the backend log confirmed the client connection |
 | macOS | historical pass | historical pass | Earlier `flutter build macos --release` produced a 40.6 MB `.app` and a live handshake; this round only Command Line Tools are installed and `flutter build macos` reports `Xcode not installed` |
 | iOS | unverified | unverified | `flutter build ios --release` reports `Xcode not installed`; ATS is configured for local networking |
 | Linux | unverified | unverified | `flutter build linux --release` reports "only supported on Linux hosts"; this host is macOS |
-| Windows | unverified | unverified | `flutter build windows --release` reports "only supported on Windows hosts"; this host is macOS |
+| Windows | pass | pass | Parallels Windows 11 VM live check: Flutter 3.50.1 + VS 2022 Build Tools 17.14; `flutter build windows --release --dart-define=TAPMC_SERVER_HOST=10.211.55.2` succeeded; the GUI showed "connected", world/position/controls rendered, and the backend log confirmed the `10.211.55.4` client |
 | HarmonyOS | unverified | unverified | Requires the HarmonyOS Flutter SDK; see [`core/frontend/docs/harmonyos.md`](./core/frontend/docs/harmonyos.md); not installed here |
 
 "Unverified" means code and platform configuration are in place and only the build environment is missing; it is not reported as passing. This round used `cd core/frontend && flutter build <platform> --release` for every target; runtime requirements: JDK 21+, Flutter 3.32+.

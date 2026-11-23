@@ -22,6 +22,8 @@
 
 ### 测试
 
+- 真机实测：Android 蓝叠 Release APK 与 Windows Parallels Windows 11 Release 可执行文件均成功连接本机后端，完成世界渲染与玩家位置显示。
+
 - 后端 84 个用例通过（含存档、幂等 join、断连清理、模组动态加载）；前端单测 14 个通过、8 个 e2e 默认跳过。
 - 基准实测：P50 0.222ms / P95 0.348ms；10 并发 400/400 无错误；RSS 平均 84.7MB 峰值 85.9MB。widget 测试断言两种窄屏尺寸无溢出且方向键不压地图。
 - `scripts/persist_verify.sh` 实测：退出写盘合法、重启后 384 格逐格一致、`SIGKILL` 后 autosave 内容与内存一致。

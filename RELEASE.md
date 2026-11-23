@@ -92,5 +92,5 @@ shasum -c SHA256SUMS
 
 - 服务端无鉴权，默认只绑本机；公网部署必须加网关。
 - 玩家位置不入档，重启后重新 `player.join` 返回出生点。
-- 当前验收覆盖 Web 与服务端；移动/桌面各端构建环境差异见 `README.md` 第十四章。
+- 当前验收覆盖 Web 与服务端；Android 蓝叠与 Windows Parallels 虚拟机已补做构建和运行实测，其他平台环境差异见 `README.md` 第十四章。
 - macOS 桌面端实跑需本机有 Xcode，可用 `./scripts/macos_verify.sh` 单独验证。
