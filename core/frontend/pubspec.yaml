@@ -17,6 +17,9 @@ dependencies:
   # 而这个包在六端都有实现，是唯一能「一套代码跑全平台」的选择。
   # 版本故意压在 3.0.x：它的 SDK 下限足够低，鸿蒙分叉也满足。
   web_socket_channel: ^3.0.3
+  # HTTP 客户端。用于 Modrinth/CurseForge API 调用。
+  # 选择 http 而非 dio：更轻量，Web 端支持更好。
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:

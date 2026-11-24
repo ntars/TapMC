@@ -92,8 +92,8 @@ class LogService extends ChangeNotifier {
     if (!_isConnected) return;
 
     try {
-      _stdoutSubscription?.cancel();
-      _stderrSubscription?.cancel();
+      await _stdoutSubscription?.cancel();
+      await _stderrSubscription?.cancel();
       await _process.kill();
     } finally {
       _isConnected = false;
@@ -111,6 +111,7 @@ class LogService extends ChangeNotifier {
     return _entries.sublist(_entries.length - count);
   }
 
+  @override
   void dispose() {
     _stdoutSubscription?.cancel();
     _stderrSubscription?.cancel();

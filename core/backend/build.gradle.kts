@@ -11,12 +11,6 @@ subprojects {
     group = "cn.ntars.tapmc"
     version = "0.1.0"
 
-    repositories {
-        mavenLocal()
-        // 先使用本地仓库尝试
-        mavenCentral()
-    }
-
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         // 字节码固定 Java 21（LTS）。用更新的 JDK 编译也能产出 21 兼容的 class，

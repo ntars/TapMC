@@ -1,0 +1,1002 @@
+[
+  {
+    "rank": 1,
+    "name": "PrismLauncher",
+    "description": "A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once (Fork of MultiMC)",
+    "html_url": "https://github.com/PrismLauncher/PrismLauncher",
+    "stars": 11206,
+    "forks": 1739,
+    "language": "C++",
+    "created_at": "2022-10-17T19:18:14Z"
+  },
+  {
+    "rank": 2,
+    "name": "HMCL",
+    "description": "A Minecraft Launcher which is multi-functional, cross-platform and popular",
+    "html_url": "https://github.com/HMCL-dev/HMCL",
+    "stars": 11055,
+    "forks": 1297,
+    "language": "Java",
+    "created_at": "2015-06-22T08:06:03Z"
+  },
+  {
+    "rank": 3,
+    "name": "PCL",
+    "description": "Minecraft 启动器 Plain Craft Launcher（PCL）。",
+    "html_url": "https://github.com/Meloong-Git/PCL",
+    "stars": 9820,
+    "forks": 1660,
+    "language": "Visual Basic .NET",
+    "created_at": "2022-07-26T15:43:26Z"
+  },
+  {
+    "rank": 4,
+    "name": "PojavLauncher",
+    "description": "A Minecraft: Java Edition Launcher for Android and iOS based on Boardwalk. Succeeded by https://github.com/AngelAuraMC/Amethyst-Android",
+    "html_url": "https://github.com/PojavLauncherTeam/PojavLauncher",
+    "stars": 9539,
+    "forks": 2674,
+    "language": "Java",
+    "created_at": "2020-03-11T03:22:54Z"
+  },
+  {
+    "rank": 5,
+    "name": "FoldCraftLauncher",
+    "description": "Fold Craft Launcher, an Android Minecraft : Java Edition launcher.",
+    "html_url": "https://github.com/FCL-Team/FoldCraftLauncher",
+    "stars": 5262,
+    "forks": 387,
+    "language": "Java",
+    "created_at": "2022-10-19T10:12:18Z"
+  },
+  {
+    "rank": 6,
+    "name": "Launcher",
+    "description": "A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once",
+    "html_url": "https://github.com/MultiMC/Launcher",
+    "stars": 4699,
+    "forks": 1049,
+    "language": "C++",
+    "created_at": "2013-09-08T14:51:29Z"
+  },
+  {
+    "rank": 7,
+    "name": "PojavLauncher_iOS",
+    "description": "A Minecraft: Java Edition Launcher for Android and iOS based on Boardwalk. Succeeded by https://github.com/AngelAuraMC/Amethyst-iOS",
+    "html_url": "https://github.com/PojavLauncherTeam/PojavLauncher_iOS",
+    "stars": 3294,
+    "forks": 1610,
+    "language": "Objective-C",
+    "created_at": "2020-12-28T22:58:35Z"
+  },
+  {
+    "rank": 8,
+    "name": "ZalithLauncher2",
+    "description": "A Minecraft: Java Edition Launcher for Android",
+    "html_url": "https://github.com/ZalithLauncher/ZalithLauncher2",
+    "stars": 2299,
+    "forks": 605,
+    "language": "Kotlin",
+    "created_at": "2025-03-24T12:30:06Z"
+  },
+  {
+    "rank": 9,
+    "name": "PolyMC",
+    "description": "A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once (Fork of MultiMC)",
+    "html_url": "https://github.com/PolyMC/PolyMC",
+    "stars": 2121,
+    "forks": 302,
+    "language": "C++",
+    "created_at": "2021-12-17T20:08:34Z"
+  },
+  {
+    "rank": 10,
+    "name": "mcpelauncher-manifest",
+    "description": "The main repository for the Linux and Mac OS Bedrock edition Minecraft launcher.",
+    "html_url": "https://github.com/minecraft-linux/mcpelauncher-manifest",
+    "stars": 1722,
+    "forks": 139,
+    "language": "CMake",
+    "created_at": "2018-06-12T12:01:08Z"
+  },
+  {
+    "rank": 11,
+    "name": "x-minecraft-launcher",
+    "description": "An Open Source Minecraft Launcher with Modern UX. Provides a Disk Efficient way to manage all your Mods!",
+    "html_url": "https://github.com/Voxelum/x-minecraft-launcher",
+    "stars": 1721,
+    "forks": 226,
+    "language": "TypeScript",
+    "created_at": "2017-06-28T11:09:01Z"
+  },
+  {
+    "rank": 12,
+    "name": "MCinaBox",
+    "description": "MCinaBox - A Minecraft: Java Edition Launcher for Android.  An Encapsulation of [CosineMath's BoatApp](https://github.com/AOF-Dev/BoatApp).",
+    "html_url": "https://github.com/AOF-Dev/MCinaBox",
+    "stars": 1321,
+    "forks": 174,
+    "language": "Java",
+    "created_at": "2020-01-31T04:19:07Z"
+  },
+  {
+    "rank": 13,
+    "name": "GDLauncher",
+    "description": "[ARCHIVED - CHECK OUT THE NEW GDLAUNCHER CARBON] GDLauncher is a simple, yet powerful Minecraft custom launcher with a strong focus on the user experience",
+    "html_url": "https://github.com/gorilla-devs/GDLauncher",
+    "stars": 1191,
+    "forks": 232,
+    "language": "JavaScript",
+    "created_at": "2016-03-27T15:53:03Z"
+  },
+  {
+    "rank": 14,
+    "name": "MojoLauncher",
+    "description": "A Minecraft: Java Edition launcher, based on PojavLauncher",
+    "html_url": "https://github.com/MojoLauncher/MojoLauncher",
+    "stars": 1098,
+    "forks": 602,
+    "language": "Java",
+    "created_at": "2025-03-19T14:50:52Z"
+  },
+  {
+    "rank": 15,
+    "name": "HeliosLauncher",
+    "description": "☀ Custom launcher for modded minecraft written in Electron and Node.js",
+    "html_url": "https://github.com/dscalzi/HeliosLauncher",
+    "stars": 1027,
+    "forks": 2085,
+    "language": "JavaScript",
+    "created_at": "2018-01-25T01:58:30Z"
+  },
+  {
+    "rank": 16,
+    "name": "FreesmLauncher",
+    "description": "A Prism Launcher fork aimed to provide a free way to play Minecraft",
+    "html_url": "https://github.com/FreesmTeam/FreesmLauncher",
+    "stars": 961,
+    "forks": 66,
+    "language": "C++",
+    "created_at": "2024-07-10T15:09:03Z"
+  },
+  {
+    "rank": 17,
+    "name": "PandoraLauncher",
+    "description": "Pandora is a modern Minecraft launcher that balances ease-of-use with powerful instance management features ",
+    "html_url": "https://github.com/Moulberry/PandoraLauncher",
+    "stars": 953,
+    "forks": 114,
+    "language": "Rust",
+    "created_at": "2025-10-24T06:49:37Z"
+  },
+  {
+    "rank": 18,
+    "name": "ATLauncher",
+    "description": "ATLauncher is a Launcher for Minecraft which integrates multiple different ModPacks to allow you to download and install ModPacks easily and quickly.",
+    "html_url": "https://github.com/ATLauncher/ATLauncher",
+    "stars": 863,
+    "forks": 243,
+    "language": "Java",
+    "created_at": "2013-09-02T11:28:26Z"
+  },
+  {
+    "rank": 19,
+    "name": "HMCL-PE",
+    "description": "Hello Minecraft! Launcher for Android",
+    "html_url": "https://github.com/HMCL-dev/HMCL-PE",
+    "stars": 860,
+    "forks": 96,
+    "language": "Java",
+    "created_at": "2022-08-18T10:50:39Z"
+  },
+  {
+    "rank": 20,
+    "name": "SJMCL",
+    "description": "🌟 A Minecraft launcher born from @SJMC-Dev, built with the community",
+    "html_url": "https://github.com/UNIkeEN/SJMCL",
+    "stars": 832,
+    "forks": 96,
+    "language": "TypeScript",
+    "created_at": "2024-11-22T08:33:00Z"
+  },
+  {
+    "rank": 21,
+    "name": "launcher",
+    "description": "Minecraft launcher for Windows, macOS and Linux: Modrinth and CurseForge mods, Forge/Fabric/Quilt/NeoForge, automatic Java, skins, friends. Open source, Tauri 2 + React.",
+    "html_url": "https://github.com/millida/launcher",
+    "stars": 806,
+    "forks": 32,
+    "language": "TypeScript",
+    "created_at": "2026-08-01T12:57:16Z"
+  },
+  {
+    "rank": 22,
+    "name": "MCPELauncher",
+    "description": "Source code for BlockLauncher, a launcher that patches Minecraft for Android",
+    "html_url": "https://github.com/zhuowei/MCPELauncher",
+    "stars": 745,
+    "forks": 205,
+    "language": "Java",
+    "created_at": "2013-01-06T01:47:06Z"
+  },
+  {
+    "rank": 23,
+    "name": "Launcher",
+    "description": "🚀 Distribute your Minecraft modpacks with a custom launcher",
+    "html_url": "https://github.com/SKCraft/Launcher",
+    "stars": 655,
+    "forks": 427,
+    "language": "Java",
+    "created_at": "2014-01-21T18:03:36Z"
+  },
+  {
+    "rank": 24,
+    "name": "portablemc",
+    "description": "Cross platform command line utility for launching Minecraft quickly and reliably with included support for Mojang versions and popular mod loaders such as Fabric, Forge, NeoForge and derived.",
+    "html_url": "https://github.com/theorzr/portablemc",
+    "stars": 566,
+    "forks": 36,
+    "language": "Rust",
+    "created_at": "2020-10-03T15:36:46Z"
+  },
+  {
+    "rank": 25,
+    "name": "LegacyLauncher",
+    "description": "A custom launcher for Minecraft LCE.",
+    "html_url": "https://github.com/gradenGnostic/LegacyLauncher",
+    "stars": 514,
+    "forks": 47,
+    "language": "JavaScript",
+    "created_at": "2026-03-04T17:44:07Z"
+  },
+  {
+    "rank": 26,
+    "name": "LeviLauncher",
+    "description": "A better way to launch Minecraft: Bedrock Edition",
+    "html_url": "https://github.com/LiteLDev/LeviLauncher",
+    "stars": 487,
+    "forks": 102,
+    "language": "Go",
+    "created_at": "2025-11-13T11:31:17Z"
+  },
+  {
+    "rank": 27,
+    "name": "ManyMC",
+    "description": "📦 A familiar Minecraft Launcher with native support for macOS arm64 (M1)",
+    "html_url": "https://github.com/MinecraftMachina/ManyMC",
+    "stars": 480,
+    "forks": 18,
+    "language": "C++",
+    "created_at": "2021-11-30T19:48:36Z"
+  },
+  {
+    "rank": 28,
+    "name": "MCSL2",
+    "description": "MCSL2 | A sleek and versatile Minecraft Server Launcher",
+    "html_url": "https://github.com/MCSLTeam/MCSL2",
+    "stars": 479,
+    "forks": 36,
+    "language": "Python",
+    "created_at": "2023-01-03T11:28:59Z"
+  },
+  {
+    "rank": 29,
+    "name": "Boardwalk",
+    "description": "Source code for Boardwalk, a Minecraft Java Edition launcher for Android (not actively developed)",
+    "html_url": "https://github.com/zhuowei/Boardwalk",
+    "stars": 476,
+    "forks": 75,
+    "language": "Java",
+    "created_at": "2014-10-13T04:33:33Z"
+  },
+  {
+    "rank": 30,
+    "name": "olauncher",
+    "description": "A modified version of the old Minecraft Launcher supporting Microsoft authentication and more.",
+    "html_url": "https://github.com/olauncher/olauncher",
+    "stars": 466,
+    "forks": 47,
+    "language": "Shell",
+    "created_at": "2022-03-11T23:32:43Z"
+  },
+  {
+    "rank": 31,
+    "name": "betacraft-launcher",
+    "description": "A launcher for Minecraft focused on legacy versions of the game",
+    "html_url": "https://github.com/betacraftuk/betacraft-launcher",
+    "stars": 442,
+    "forks": 54,
+    "language": "Java",
+    "created_at": "2018-11-11T22:28:26Z"
+  },
+  {
+    "rank": 32,
+    "name": "Natsurainko.FluentLauncher",
+    "description": "A Minecraft launcher specifically designed for Windows 11, delivering a clean and smooth visual experience.",
+    "html_url": "https://github.com/Xcube-Studio/Natsurainko.FluentLauncher",
+    "stars": 420,
+    "forks": 19,
+    "language": "C#",
+    "created_at": "2022-02-11T05:31:01Z"
+  },
+  {
+    "rank": 33,
+    "name": "MinecraftLauncher-core",
+    "description": "Lightweight module that downloads and runs Minecraft using javascript / NodeJS",
+    "html_url": "https://github.com/Pierce01/MinecraftLauncher-core",
+    "stars": 392,
+    "forks": 98,
+    "language": "JavaScript",
+    "created_at": "2018-10-29T22:12:22Z"
+  },
+  {
+    "rank": 34,
+    "name": "minecraft-vortex-launcher",
+    "description": "Fast, lightweight and easy to use Minecraft launcher",
+    "html_url": "https://github.com/Kron4ek/minecraft-vortex-launcher",
+    "stars": 389,
+    "forks": 37,
+    "language": "PureBasic",
+    "created_at": "2018-06-13T08:30:39Z"
+  },
+  {
+    "rank": 35,
+    "name": "PCL2-NewsHomepage",
+    "description": "Provides latest Minecraft news on Plain Craft Launcher 2",
+    "html_url": "https://github.com/Light-Beacon/PCL2-NewsHomepage",
+    "stars": 379,
+    "forks": 32,
+    "language": "Markdown",
+    "created_at": "2021-04-17T06:58:24Z"
+  },
+  {
+    "rank": 36,
+    "name": "amber-launcher",
+    "description": "An independent Minecraft: Java Edition launcher with isolated instances, Java management and Fabric support.",
+    "html_url": "https://github.com/ayr1k/amber-launcher",
+    "stars": 326,
+    "forks": 1,
+    "language": "JavaScript",
+    "created_at": "2026-10-21T08:13:40Z"
+  },
+  {
+    "rank": 37,
+    "name": "Ore-UI-theme-pack",
+    "description": "Minecraft Bedrock inspired Ore UI theme for Prism Launcher.",
+    "html_url": "https://github.com/ninsent/Ore-UI-theme-pack",
+    "stars": 321,
+    "forks": 1,
+    "language": "CSS",
+    "created_at": "2026-05-25T08:16:39Z"
+  },
+  {
+    "rank": 38,
+    "name": "BlockHelm-Launcher",
+    "description": "简洁现代的 Minecraft Java 版启动器，支持实例、资源与账户管理。",
+    "html_url": "https://github.com/zqq-699/BlockHelm-Launcher",
+    "stars": 311,
+    "forks": 19,
+    "language": "C#",
+    "created_at": "2026-06-12T11:10:02Z"
+  },
+  {
+    "rank": 39,
+    "name": "Swift-Craft-Launcher",
+    "description": "Swift Craft Launcher is a lightweight, native Minecraft launcher built specifically for macOS, crafted with Swift and SwiftUI.",
+    "html_url": "https://github.com/suhang12332/Swift-Craft-Launcher",
+    "stars": 306,
+    "forks": 35,
+    "language": "Swift",
+    "created_at": "2025-08-02T12:01:55Z"
+  },
+  {
+    "rank": 40,
+    "name": "LiquidLauncher",
+    "description": "A custom Minecraft launcher for LiquidBounce",
+    "html_url": "https://github.com/CCBlueX/LiquidLauncher",
+    "stars": 293,
+    "forks": 57,
+    "language": "Rust",
+    "created_at": "2021-03-11T23:29:01Z"
+  },
+  {
+    "rank": 41,
+    "name": "CmlLib.Core",
+    "description": ".NET Minecraft Launcher Library. All Version, Auth, Forge, Java, Crossplatform",
+    "html_url": "https://github.com/CmlLib/CmlLib.Core",
+    "stars": 285,
+    "forks": 44,
+    "language": "C#",
+    "created_at": "2020-04-02T15:54:12Z"
+  },
+  {
+    "rank": 42,
+    "name": "ProjBobcat",
+    "description": "The next generation Minecraft launcher core written in C# providing the freest, fastest and the most complete experience.",
+    "html_url": "https://github.com/Corona-Studio/ProjBobcat",
+    "stars": 262,
+    "forks": 26,
+    "language": "C#",
+    "created_at": "2020-02-06T08:51:23Z"
+  },
+  {
+    "rank": 43,
+    "name": "BMCL",
+    "description": "Bangbang93's Minecraft Launcher",
+    "html_url": "https://github.com/bangbang93/BMCL",
+    "stars": 256,
+    "forks": 34,
+    "language": "C#",
+    "created_at": "2013-08-06T15:58:33Z"
+  },
+  {
+    "rank": 44,
+    "name": "GDLauncher-Carbon",
+    "description": "GDLauncher Carbon is a simple, yet powerful Minecraft custom launcher with a strong focus on the user experience",
+    "html_url": "https://github.com/gorilla-devs/GDLauncher-Carbon",
+    "stars": 247,
+    "forks": 47,
+    "language": "TypeScript",
+    "created_at": "2022-07-05T19:37:40Z"
+  },
+  {
+    "rank": 45,
+    "name": "HMCL-PE-CN",
+    "description": "Hello Minecraft! Launcher for Android",
+    "html_url": "https://github.com/HMCL-dev/HMCL-PE-CN",
+    "stars": 237,
+    "forks": 41,
+    "language": "C",
+    "created_at": "2021-10-15T20:05:20Z"
+  },
+  {
+    "rank": 46,
+    "name": "MSL",
+    "description": "Minecraft Server Launcher (MSL)，一个使用WPF制作的面向Win系统的Minecraft玩家联机/开服工具",
+    "html_url": "https://github.com/MSLTeam/MSL",
+    "stars": 235,
+    "forks": 19,
+    "language": "C#",
+    "created_at": "2023-01-23T13:45:03Z"
+  },
+  {
+    "rank": 47,
+    "name": "Horizon-Offline-Launcher",
+    "description": "Horizon Offline Rust Minecraft Launcher without License",
+    "html_url": "https://github.com/gerdaroot/Horizon-Offline-Launcher",
+    "stars": 228,
+    "forks": 37,
+    "language": "Rust",
+    "created_at": "2026-10-29T20:47:45Z"
+  },
+  {
+    "rank": 48,
+    "name": "minecraft-launcher-core-node",
+    "description": "Provide packages to install Minecraft, launch Minecraft and more to build launcher with NodeJs/Electron!",
+    "html_url": "https://github.com/Voxelum/minecraft-launcher-core-node",
+    "stars": 220,
+    "forks": 33,
+    "language": "TypeScript",
+    "created_at": "2017-06-16T03:47:31Z"
+  },
+  {
+    "rank": 49,
+    "name": "Selvania-Launcher",
+    "description": "Custom launcher for modded minecraft written in electron.js and Node.js",
+    "html_url": "https://github.com/Luuxis/Selvania-Launcher",
+    "stars": 218,
+    "forks": 1634,
+    "language": "JavaScript",
+    "created_at": "2021-02-09T19:58:45Z"
+  },
+  {
+    "rank": 50,
+    "name": "console-minecraft-launcher",
+    "description": "一个在命令行上运行的 Minecraft Java 版启动器 A Minecraft Java Edition Launcher Running on the Command Line",
+    "html_url": "https://github.com/MrShieh-X/console-minecraft-launcher",
+    "stars": 209,
+    "forks": 13,
+    "language": "Java",
+    "created_at": "2022-03-12T07:57:33Z"
+  },
+  {
+    "rank": 51,
+    "name": "VSCode-minecraft-workbench",
+    "description": "A VSCode Extensions that can download and launch Minecraft.",
+    "html_url": "https://github.com/lopleec/VSCode-minecraft-workbench",
+    "stars": 199,
+    "forks": 25,
+    "language": "TypeScript",
+    "created_at": "2026-10-27T13:07:40Z"
+  },
+  {
+    "rank": 52,
+    "name": "quantumlauncher",
+    "description": "A simple, powerful Minecraft launcher",
+    "html_url": "https://github.com/Mrmayman/quantumlauncher",
+    "stars": 198,
+    "forks": 18,
+    "language": "Rust",
+    "created_at": "2024-03-09T15:23:46Z"
+  },
+  {
+    "rank": 53,
+    "name": "scl",
+    "description": "SharpCraftLauncher —— A super light, fast, clean minecraft launcher framework written in rust. 一个用 Rust 编写的无比轻量的，迅速的，简洁的启动器的附属框架们。",
+    "html_url": "https://github.com/Steve-xmh/scl",
+    "stars": 192,
+    "forks": 14,
+    "language": "Rust",
+    "created_at": "2021-03-06T12:43:13Z"
+  },
+  {
+    "rank": 54,
+    "name": "CitrineLauncher",
+    "description": "Premium minecraft launcher developed in .NET 10",
+    "html_url": "https://github.com/Synalix/CitrineLauncher",
+    "stars": 178,
+    "forks": 0,
+    "language": "C#",
+    "created_at": "2026-03-10T22:55:19Z"
+  },
+  {
+    "rank": 55,
+    "name": "nitrolaunch",
+    "description": "The supercharged Minecraft launcher and server manager",
+    "html_url": "https://github.com/Nitrolaunch/nitrolaunch",
+    "stars": 172,
+    "forks": 9,
+    "language": "Rust",
+    "created_at": "2022-12-20T02:44:07Z"
+  },
+  {
+    "rank": 56,
+    "name": "Launcher",
+    "description": "Улучшеный Minecraft лаунчер на основе sashok's742 v3",
+    "html_url": "https://github.com/GravitLauncher/Launcher",
+    "stars": 160,
+    "forks": 114,
+    "language": "Java",
+    "created_at": "2018-09-19T12:06:32Z"
+  },
+  {
+    "rank": 57,
+    "name": "JMCCC",
+    "description": "A powerful open-source library for launching and downloading Minecraft.",
+    "html_url": "https://github.com/xfl03/JMCCC",
+    "stars": 155,
+    "forks": 33,
+    "language": "Java",
+    "created_at": "2015-06-07T06:52:13Z"
+  },
+  {
+    "rank": 58,
+    "name": "feather-client",
+    "description": "Feather Client: Minecraft Launcher with 40 Mods, Voice Chat, FPS Boost",
+    "html_url": "https://github.com/bilalatif089/feather-client",
+    "stars": 153,
+    "forks": 0,
+    "language": "TypeScript",
+    "created_at": "2026-11-15T19:52:50Z"
+  },
+  {
+    "rank": 59,
+    "name": "MiniLaunch",
+    "description": "A simple and minimalist launcher for Minecraft.",
+    "html_url": "https://github.com/sammwyy/MiniLaunch",
+    "stars": 150,
+    "forks": 9,
+    "language": "Java",
+    "created_at": "2025-07-05T05:23:51Z"
+  },
+  {
+    "rank": 60,
+    "name": "NsisoLauncher",
+    "description": "A New Minecraft Launcher from Nsiso",
+    "html_url": "https://github.com/Nsiso/NsisoLauncher",
+    "stars": 143,
+    "forks": 27,
+    "language": "C#",
+    "created_at": "2018-05-14T15:14:55Z"
+  },
+  {
+    "rank": 61,
+    "name": "Trinity-Launcher",
+    "description": "UI for minecraft bedrock linux",
+    "html_url": "https://github.com/Trinity-LA/Trinity-Launcher",
+    "stars": 140,
+    "forks": 20,
+    "language": "C++",
+    "created_at": "2025-11-21T00:33:35Z"
+  },
+  {
+    "rank": 62,
+    "name": "SquareMinecraftLauncherCore",
+    "description": "",
+    "html_url": "https://github.com/baibao132/SquareMinecraftLauncherCore",
+    "stars": 135,
+    "forks": 2,
+    "language": "C#",
+    "created_at": "2019-05-26T15:52:53Z"
+  },
+  {
+    "rank": 63,
+    "name": "FreeLauncher",
+    "description": "Open source C# Minecraft launcher.",
+    "html_url": "https://github.com/dedepete/FreeLauncher",
+    "stars": 134,
+    "forks": 41,
+    "language": "C#",
+    "created_at": "2015-08-21T00:14:32Z"
+  },
+  {
+    "rank": 64,
+    "name": "mclauncher-api",
+    "description": "Tomsik68's Minecraft Launcher API. Documenting how minecraft launcher works & creating an API which will be able to work with custom launchers. Make sure to check out wiki!",
+    "html_url": "https://github.com/tomsik68/mclauncher-api",
+    "stars": 130,
+    "forks": 21,
+    "language": "Java",
+    "created_at": "2013-07-03T08:59:20Z"
+  },
+  {
+    "rank": 65,
+    "name": "Polymerium",
+    "description": "🐿️ A metadata-driven Minecraft launcher for reproducible, storage-efficient instances and a built-in CLI with MCP mode for AI agents.",
+    "html_url": "https://github.com/d3ara1n/Polymerium",
+    "stars": 130,
+    "forks": 5,
+    "language": "C#",
+    "created_at": "2023-01-11T16:50:30Z"
+  },
+  {
+    "rank": 66,
+    "name": "Paperclip",
+    "description": "Bootstrap utility and launcher for the Paper Minecraft server",
+    "html_url": "https://github.com/PaperMC/Paperclip",
+    "stars": 128,
+    "forks": 65,
+    "language": "Java",
+    "created_at": "2016-01-22T06:47:52Z"
+  },
+  {
+    "rank": 67,
+    "name": "KMCCC",
+    "description": "An OpenSource Minecraft Launcher for .Net Developers",
+    "html_url": "https://github.com/MineStudio/KMCCC",
+    "stars": 126,
+    "forks": 33,
+    "language": "C#",
+    "created_at": "2014-08-07T08:43:03Z"
+  },
+  {
+    "rank": 68,
+    "name": "pacmc",
+    "description": "An easy-to-use package manager (and soon to be launcher) for Minecraft mods.",
+    "html_url": "https://github.com/jakobkmar/pacmc",
+    "stars": 124,
+    "forks": 9,
+    "language": "Kotlin",
+    "created_at": "2021-05-24T16:04:17Z"
+  },
+  {
+    "rank": 69,
+    "name": "ShardLauncher",
+    "description": "这是一个基于 Jetpack Compose 开发，适用于移动端的 Minecraft Java 版启动器",
+    "html_url": "https://github.com/ShardLauncher/ShardLauncher",
+    "stars": 123,
+    "forks": 5,
+    "language": "Kotlin",
+    "created_at": "2025-09-21T03:10:51Z"
+  },
+  {
+    "rank": 70,
+    "name": "Gml.Launcher",
+    "description": "Gml.Launcher is a Minecraft launcher application developed using C#. It is designed to streamline and simplify the process of launching Minecraft, managing game versions, and configuring in-game parameters directly from the user interface of the Gml.Backend.",
+    "html_url": "https://github.com/Gml-Launcher/Gml.Launcher",
+    "stars": 113,
+    "forks": 47,
+    "language": "C#",
+    "created_at": "2023-02-25T13:45:31Z"
+  },
+  {
+    "rank": 71,
+    "name": "DashLoader",
+    "description": "Launch Minecraft at the speed of light.",
+    "html_url": "https://github.com/alphaqu/DashLoader",
+    "stars": 113,
+    "forks": 35,
+    "language": "Java",
+    "created_at": "2021-08-09T10:20:49Z"
+  },
+  {
+    "rank": 72,
+    "name": "mcpeserver",
+    "description": "A Minecraft Server Launcher Written by Golang. Deprecated, please use official BDS",
+    "html_url": "https://github.com/codehz/mcpeserver",
+    "stars": 111,
+    "forks": 8,
+    "language": "Go",
+    "created_at": "2018-05-08T06:04:23Z"
+  },
+  {
+    "rank": 73,
+    "name": "MineOnline",
+    "description": "Launch old versions of minecraft just as you remembered them, only without a browser.",
+    "html_url": "https://github.com/craftycodie/MineOnline",
+    "stars": 108,
+    "forks": 15,
+    "language": "Java",
+    "created_at": "2020-05-14T04:14:16Z"
+  },
+  {
+    "rank": 74,
+    "name": "basalt-launcher",
+    "description": "A open source Minecraft launcher written in rust. Modrinth and CurseForge, mod loaders, and imports from other launchers.",
+    "html_url": "https://github.com/MegalithOfficial/basalt-launcher",
+    "stars": 103,
+    "forks": 3,
+    "language": "Rust",
+    "created_at": "2026-06-21T12:12:43Z"
+  },
+  {
+    "rank": 75,
+    "name": "nixcraft",
+    "description": "A declarative, reproducible Minecraft launcher and server manager in Nix",
+    "html_url": "https://github.com/loystonpais/nixcraft",
+    "stars": 101,
+    "forks": 7,
+    "language": "Nix",
+    "created_at": "2025-08-22T04:42:21Z"
+  },
+  {
+    "rank": 76,
+    "name": "SwarmBot",
+    "description": "🐜 A performant, autonomous bot launcher for Minecraft",
+    "html_url": "https://github.com/SwarmBotMC/SwarmBot",
+    "stars": 100,
+    "forks": 9,
+    "language": "Rust",
+    "created_at": "2021-06-15T07:35:40Z"
+  },
+  {
+    "rank": 77,
+    "name": "Launcher",
+    "description": "Minecraft Launcher written in Kotlin. Made for MCSR Community and MCSR Ranked",
+    "html_url": "https://github.com/MCSRLauncher/Launcher",
+    "stars": 98,
+    "forks": 17,
+    "language": "Kotlin",
+    "created_at": "2025-07-06T18:25:00Z"
+  },
+  {
+    "rank": 78,
+    "name": "rmcl",
+    "description": "A minecraft TUI/CLI launcher written in Rust",
+    "html_url": "https://github.com/objz/rmcl",
+    "stars": 97,
+    "forks": 10,
+    "language": "Rust",
+    "created_at": "2025-01-24T12:23:42Z"
+  },
+  {
+    "rank": 79,
+    "name": "hilltty-flags",
+    "description": "Maximum performance launch flags for Minecraft Server",
+    "html_url": "https://github.com/hilltty/hilltty-flags",
+    "stars": 97,
+    "forks": 7,
+    "language": null,
+    "created_at": "2021-06-18T14:20:37Z"
+  },
+  {
+    "rank": 80,
+    "name": "LC-Launcher",
+    "description": "Multi-platform launcher written in JS for Minecraft Legacy Console Edition forks.",
+    "html_url": "https://github.com/thehuckledev/LC-Launcher",
+    "stars": 94,
+    "forks": 3,
+    "language": "JavaScript",
+    "created_at": "2026-04-06T16:06:05Z"
+  },
+  {
+    "rank": 81,
+    "name": "LegacyLauncher",
+    "description": "Legacy custom launcher for installing and updating Spoutcraft and Minecraft.",
+    "html_url": "https://github.com/spoutcraft/LegacyLauncher",
+    "stars": 93,
+    "forks": 199,
+    "language": "Java",
+    "created_at": "2011-07-29T15:52:48Z"
+  },
+  {
+    "rank": 82,
+    "name": "JiayiLauncher",
+    "description": "Jiayi Launcher — Minecraft for Windows mod manager (Legacy)",
+    "html_url": "https://github.com/JiayiSoftware/JiayiLauncher",
+    "stars": 92,
+    "forks": 16,
+    "language": "C#",
+    "created_at": "2022-07-06T16:58:12Z"
+  },
+  {
+    "rank": 83,
+    "name": "blockcraft-launcher-hub",
+    "description": "Third-party launcher overview & setup notes for Minecraft custom clients.",
+    "html_url": "https://github.com/hayden-lee22-hash/blockcraft-launcher-hub",
+    "stars": 90,
+    "forks": 0,
+    "language": null,
+    "created_at": "2026-11-15T11:55:46Z"
+  },
+  {
+    "rank": 84,
+    "name": "Amethyst-Launcher",
+    "description": "Launcher for Minecraft Bedrock mods created with AmethystAPI",
+    "html_url": "https://github.com/FrederoxDev/Amethyst-Launcher",
+    "stars": 89,
+    "forks": 8,
+    "language": "C++",
+    "created_at": "2024-01-26T19:51:59Z"
+  },
+  {
+    "rank": 85,
+    "name": "launcher",
+    "description": "Revival of PollyMC. Free Minecraft launcher with offline account support, custom skins, quick launch, performance presets, Discord Rich Presence, and more. Based on Prism Launcher.",
+    "html_url": "https://github.com/PollyMC-Continued/launcher",
+    "stars": 87,
+    "forks": 3,
+    "language": "C++",
+    "created_at": "2026-03-30T12:23:07Z"
+  },
+  {
+    "rank": 86,
+    "name": "shard",
+    "description": "Minecraft launcher with deduplicated mod storage. Content-addressed library stores mods once, shares across profiles. CLI + desktop app. Supports Fabric, Forge, Quilt, NeoForge. Modrinth & CurseForge integration.",
+    "html_url": "https://github.com/Th0rgal/shard",
+    "stars": 86,
+    "forks": 6,
+    "language": "Rust",
+    "created_at": "2025-12-29T07:39:53Z"
+  },
+  {
+    "rank": 87,
+    "name": "Emerald",
+    "description": "Emerald is a cross-platform Minecraft launcher written in C# with Uno Platform",
+    "html_url": "https://github.com/RiversideValley/Emerald",
+    "stars": 84,
+    "forks": 1,
+    "language": "C#",
+    "created_at": "2022-05-28T09:24:05Z"
+  },
+  {
+    "rank": 88,
+    "name": "gomclauncher",
+    "description": "A Minecraft Launcher ",
+    "html_url": "https://github.com/xmdhs/gomclauncher",
+    "stars": 83,
+    "forks": 10,
+    "language": "Go",
+    "created_at": "2020-06-15T09:52:22Z"
+  },
+  {
+    "rank": 89,
+    "name": "PyCraft",
+    "description": "A Minecraft launcher made in python.",
+    "html_url": "https://github.com/shasankp000/PyCraft",
+    "stars": 82,
+    "forks": 6,
+    "language": "Python",
+    "created_at": "2021-09-01T14:45:11Z"
+  },
+  {
+    "rank": 90,
+    "name": "RPMLauncher",
+    "description": "A better Minecraft Launcher that supports cross-platform and many functionalities for you to explore!",
+    "html_url": "https://github.com/RPMTW/RPMLauncher",
+    "stars": 81,
+    "forks": 16,
+    "language": "Dart",
+    "created_at": "2021-05-22T09:00:24Z"
+  },
+  {
+    "rank": 91,
+    "name": "b-launcher",
+    "description": "轻量 Minecraft 启动器",
+    "html_url": "https://github.com/cubk1/b-launcher",
+    "stars": 79,
+    "forks": 14,
+    "language": "C++",
+    "created_at": "2026-10-28T03:09:55Z"
+  },
+  {
+    "rank": 92,
+    "name": "minecraft-launcher",
+    "description": "Simple script for launch Minecraft without official launcher",
+    "html_url": "https://github.com/iiiypuk/minecraft-launcher",
+    "stars": 73,
+    "forks": 15,
+    "language": "Shell",
+    "created_at": "2013-11-23T00:14:35Z"
+  },
+  {
+    "rank": 93,
+    "name": "MFWL-Minecraft-For-Windows-Unlock-Launcher",
+    "description": "解锁 Minecraft for Windows （MCBE）的一键 BAT 脚本",
+    "html_url": "https://github.com/jiesou/MFWL-Minecraft-For-Windows-Unlock-Launcher",
+    "stars": 72,
+    "forks": 9,
+    "language": "Batchfile",
+    "created_at": "2022-01-26T15:08:58Z"
+  },
+  {
+    "rank": 94,
+    "name": "picomc",
+    "description": "A tiny CLI Minecraft launcher",
+    "html_url": "https://github.com/sammko/picomc",
+    "stars": 71,
+    "forks": 12,
+    "language": "Python",
+    "created_at": "2020-06-04T00:48:09Z"
+  },
+  {
+    "rank": 95,
+    "name": "OpenLauncherLib",
+    "description": "A simple modern java launching library with minecraft support",
+    "html_url": "https://github.com/Litarvan/OpenLauncherLib",
+    "stars": 69,
+    "forks": 30,
+    "language": "Java",
+    "created_at": "2015-02-04T18:37:01Z"
+  },
+  {
+    "rank": 96,
+    "name": "mcpelauncher-client",
+    "description": "The code for launching the client",
+    "html_url": "https://github.com/minecraft-linux/mcpelauncher-client",
+    "stars": 68,
+    "forks": 59,
+    "language": "C",
+    "created_at": "2018-04-03T12:37:36Z"
+  },
+  {
+    "rank": 97,
+    "name": "minecraft.nix",
+    "description": "Command line Minecraft launcher managed by nix",
+    "html_url": "https://github.com/Ninlives/minecraft.nix",
+    "stars": 68,
+    "forks": 11,
+    "language": "Nix",
+    "created_at": "2022-01-30T07:41:27Z"
+  },
+  {
+    "rank": 98,
+    "name": "HelixLauncher",
+    "description": "A Minecraft launcher built on Rust",
+    "html_url": "https://github.com/HelixLauncher/HelixLauncher",
+    "stars": 68,
+    "forks": 1,
+    "language": "Rust",
+    "created_at": "2022-10-19T21:33:36Z"
+  },
+  {
+    "rank": 99,
+    "name": "mcpelauncher-swift",
+    "description": "Native SwiftUI launcher for Minecraft Bedrock on macOS built on top of mcpelauncher",
+    "html_url": "https://github.com/hugonote/mcpelauncher-swift",
+    "stars": 67,
+    "forks": 4,
+    "language": "Swift",
+    "created_at": "2026-05-18T12:45:10Z"
+  },
+  {
+    "rank": 100,
+    "name": "LauncherV3",
+    "description": "Minecraft launcher for the Technic Platform",
+    "html_url": "https://github.com/TechnicPack/LauncherV3",
+    "stars": 66,
+    "forks": 65,
+    "language": "Java",
+    "created_at": "2014-02-11T22:09:31Z"
+  }
+]

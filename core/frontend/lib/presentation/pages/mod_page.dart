@@ -57,9 +57,9 @@ class _ModPageState extends State<ModPage> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${mod['name']} ${enabled ? "启用" : "禁用"}成功')),
+          SnackBar(content: Text('${mod["name"]} ${enabled ? "启用" : "禁用"}成功')),
         );
-        _loadMods(); // 刷新列表
+        await _loadMods(); // 刷新列表
       }
     } catch (e) {
       if (mounted) {
@@ -78,40 +78,36 @@ class _ModPageState extends State<ModPage> {
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : mods.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.block, size: 64),
-                      SizedBox(height: 16),
-                      Text('暂无模组'),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: mods.length,
-                  itemBuilder: (context, index) {
-                    final mod = mods[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      child: ListTile(
-                        title: Text(mod['name'] ?? '未知模组'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(mod['version'] ?? ''),
-                            if (mod['loader'] != null) Text('加载器: ${mod['loader']}'),
-                          ],
-                        ),
-                        trailing: Switch(
-                          value: mod['enabled'] ?? true,
-                          onChanged: (value) => _toggleMod(mod, value),
-                        ),
+          : RefreshIndicator(
+              onRefresh: _loadMods,
+              child: ListView.builder(
+                itemCount: mods.length,
+                itemBuilder: (context, index) {
+                  final mod = mods[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      leading: Icon(
+                        mod['enabled'] ? Icons.check_box : Icons.check_box_outlined,
+                        color: mod['enabled'] ? Colors.green : null,
                       ),
-                    );
-                  },
-                ),
+                      title: Text(mod['name']),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('版本: ${mod["version"]}'),
+                          if (mod['author'] != null) Text('作者: ${mod["author"]}'),
+                        ],
+                      ),
+                      trailing: Switch(
+                        value: mod['enabled'] ?? false,
+                        onChanged: (value) => _toggleMod(mod, value),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

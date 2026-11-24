@@ -50,9 +50,11 @@ class _LogPageState extends State<LogPage> {
       });
     }
     
-    setState(() {
-      loading = false;
-    });
+    if (mounted) {
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   List<String> get filteredLogs {
@@ -81,24 +83,26 @@ class _LogPageState extends State<LogPage> {
     // 模拟导出
     await Future.delayed(const Duration(seconds: 1));
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('日志已导出到 ./logs/export.txt')),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('日志已导出到 ./logs/export.txt')),
+      );
+    }
   }
 
   Future<void> _clearLogs() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('清空日志'),
         content: const Text('确定要清空所有日志吗？'),
         actions: [
           TextButton(
-            onPressed: Navigator.of(context).pop,
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('取消'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('清空'),
           ),
         ],
@@ -119,104 +123,69 @@ class _LogPageState extends State<LogPage> {
           IconButton(
             icon: const Icon(Icons.download),
             onPressed: _exportLogs,
-            tooltip: '导出日志',
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
             onPressed: _clearLogs,
-            tooltip: '清空日志',
           ),
         ],
       ),
       body: Column(
         children: [
-          // 过滤器
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: logLevels.map((level) {
-                  final isSelected = selectedLevel == level;
-                  return FilterChip(
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: logLevels.map((level) {
+                return Expanded(
+                  child: FilterChip(
                     label: Text(level),
-                    selected: isSelected,
-                    onSelected: (_) => setState(() => selectedLevel = level),
-                  );
-                }).toList(),
-              ),
+                    selected: selectedLevel == level,
+                    onSelected: (selected) {
+                      setState(() => selectedLevel = level);
+                    },
+                  ),
+                );
+              }).toList(),
             ),
           ),
-          
-          // 日志列表
           Expanded(
             child: loading
                 ? const Center(child: CircularProgressIndicator())
                 : filteredLogs.isEmpty
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.inbox_outlined, size: 64),
-                          const SizedBox(height: 16),
-                          Text('暂无日志记录'),
-                        ],
-                      )
+                    ? const Center(child: Text('暂无日志'))
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16),
                         itemCount: filteredLogs.length,
                         itemBuilder: (context, index) {
                           final log = filteredLogs[index];
-                          return LogEntry(log: log);
+                          String? level;
+                          if (log.contains('[Error]')) {
+                            level = 'Error';
+                          } else if (log.contains('[Warn]')) {
+                            level = 'Warn';
+                          } else if (log.contains('[Info]')) {
+                            level = 'Info';
+                          }
+                          return ListTile(
+                            leading: level != null
+                                ? Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: levelColor(level),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  )
+                                : null,
+                            title: Text(
+                              log,
+                              style: TextStyle(color: levelColor(level ?? '')),
+                            ),
+                          );
                         },
                       ),
           ),
         ],
       ),
     );
-  }
-}
-
-/// 日志条目组件
-class LogEntry extends StatelessWidget {
-  const LogEntry({super.key, required this.log});
-
-  final String log;
-
-  @override
-  Widget build(BuildContext context) {
-    // 解析日志级别
-    final match = RegExp(r'\[(Error|Warn|Info)\]').firstMatch(log);
-    final level = match?.group(1) ?? 'Info';
-    
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: levelColor(context, level),
-            shape: BoxShape.circle,
-          ),
-        ),
-        title: Text(
-          log,
-          style: TextStyle(color: levelColor(context, level)),
-        ),
-      ),
-    );
-  }
-
-  Color levelColor(BuildContext context, String level) {
-    switch (level) {
-      case 'Error':
-        return Colors.red;
-      case 'Warn':
-        return Colors.orange;
-      case 'Info':
-        return Colors.blue;
-      default:
-        return Theme.of(context).colorScheme.onSurface;
-    }
   }
 }

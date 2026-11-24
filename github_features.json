@@ -1,0 +1,68 @@
+[
+  {
+    "name": "HMCL",
+    "description": "A Minecraft Launcher which is multi-functional, cross-platform and popular",
+    "homepage": "https://hmcl.huangyuhui.net",
+    "topics": [
+      "javafx",
+      "minecraft",
+      "minecraft-launcher"
+    ],
+    "language": "Java",
+    "forks_count": 1297,
+    "stargazers_count": 11055,
+    "subscribers_count": 98
+  },
+  {
+    "name": "PrismLauncher",
+    "description": "A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once (Fork of MultiMC)",
+    "homepage": "https://prismlauncher.org",
+    "topics": [
+      "cpp",
+      "cpp20",
+      "fabricmc",
+      "forge",
+      "linux",
+      "minecraft",
+      "minecraft-launcher",
+      "modrinth",
+      "multimc",
+      "prismlauncher",
+      "qt",
+      "qt6",
+      "quiltmc"
+    ],
+    "language": "C++",
+    "forks_count": 1739,
+    "stargazers_count": 11206,
+    "subscribers_count": 47
+  },
+  {
+    "name": "PojavLauncher",
+    "description": "A Minecraft: Java Edition Launcher for Android and iOS based on Boardwalk. Succeeded by https://github.com/AngelAuraMC/Amethyst-Android",
+    "homepage": "",
+    "topics": [
+      "minecraft",
+      "minecraft-launcher"
+    ],
+    "language": "Java",
+    "forks_count": 2674,
+    "stargazers_count": 9539,
+    "subscribers_count": 49
+  },
+  {
+    "name": "Launcher",
+    "description": "A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once",
+    "homepage": "https://multimc.org/",
+    "topics": [
+      "c-plus-plus",
+      "launcher",
+      "minecraft",
+      "multimc"
+    ],
+    "language": "C++",
+    "forks_count": 1049,
+    "stargazers_count": 4699,
+    "subscribers_count": 88
+  }
+]

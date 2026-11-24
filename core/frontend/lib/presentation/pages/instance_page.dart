@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 /// 实例管理页面
 class InstancePage extends StatefulWidget {
@@ -11,11 +12,19 @@ class InstancePage extends StatefulWidget {
 class _InstancePageState extends State<InstancePage> {
   List<dynamic> instances = [];
   bool loading = true;
+  late final Timer _timer;
 
   @override
   void initState() {
     super.initState();
     _loadInstances();
+    _timer = Timer.periodic(const Duration(minutes: 5), (_) => _loadInstances());
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   Future<void> _loadInstances() async {
@@ -91,7 +100,7 @@ class _InstancePageState extends State<InstancePage> {
     );
     
     // 创建实例后刷新列表
-    _loadInstances();
+    await _loadInstances();
   }
 
   Future<void> _deleteInstance(dynamic instance) async {
@@ -118,7 +127,7 @@ class _InstancePageState extends State<InstancePage> {
     if (confirm == true) {
       try {
         // 调用后端 API
-        _loadInstances();
+        await _loadInstances();
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -131,50 +140,60 @@ class _InstancePageState extends State<InstancePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('实例管理'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _createInstance,
-          ),
-        ],
+      appBar: AppBar(title: const Text('实例管理')),
+      body: ListView.builder(
+        itemCount: instances.length,
+        itemBuilder: (context, index) {
+          final instance = instances[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListTile(
+              title: Text(instance['name']),
+              subtitle: Text('版本: ${instance['gameVersion']}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow),
+                    onPressed: () => _launchInstance(instance),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _editInstance(instance),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => _deleteInstance(instance),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : instances.isEmpty
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.folder_open, size: 64),
-                    const SizedBox(height: 16),
-                    Text('暂无实例'),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      onPressed: _createInstance,
-                      icon: const Icon(Icons.add),
-                      label: const Text('点击创建新实例'),
-                    ),
-                  ],
-                )
-              : ListView.builder(
-                  itemCount: instances.length,
-                  itemBuilder: (context, index) {
-                    final instance = instances[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        title: Text(instance['name']),
-                        subtitle: Text('版本: ${instance['gameVersion']}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteInstance(instance),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _createInstance,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _launchInstance(dynamic instance) {
+    // TODO: 实现启动逻辑
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('启动实例: ${instance['name']}')),
+    );
+  }
+
+  void _editInstance(dynamic instance) {
+    // TODO: 实现编辑逻辑
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('编辑实例: ${instance['name']}')),
     );
   }
 }

@@ -166,8 +166,10 @@ class DownloadManager extends ChangeNotifier {
   }
 
   void _startDownload(DownloadTask task) {
-    if (task.status != DownloadStatus.pending && 
-        task.status != DownloadStatus.paused) return;
+    if (task.status != DownloadStatus.pending &&
+        task.status != DownloadStatus.paused) {
+      return;
+    }
     
     task.status = DownloadStatus.downloading;
     task.startTime = DateTime.now();

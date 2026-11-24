@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 enum LaunchStatus {
   idle,
@@ -41,11 +42,11 @@ class LaunchConfig {
   }
 }
 
-class GameLauncher {
+class GameLauncher with ChangeNotifier {
   final LaunchConfig config;
   Process? _process;
-  StreamSubscription<dynamic>? _stdoutSubscription;
-  StreamSubscription<dynamic>? _stderrSubscription;
+  StreamSubscription<List<int>>? _stdoutSubscription;
+  StreamSubscription<List<int>>? _stderrSubscription;
 
   LaunchStatus _status = LaunchStatus.idle;
   String _output = '';
@@ -81,8 +82,8 @@ class GameLauncher {
         notifyListeners();
       });
 
-      _process!.exitCode.then((code) {
-        _status = code == 0 ? LaunchStatus.stopped : LaunchStatus.failed;
+      _process!.exitCode.whenComplete(() {
+        _status = LaunchStatus.stopped;
         notifyListeners();
       });
 
@@ -122,22 +123,11 @@ class GameLauncher {
     }
   }
 
-  Future<void> restart() async {
-    await stop();
-    await Future.delayed(const Duration(seconds: 1));
-    await launch();
-  }
-
-  Stream<void> get statusChanges => _statusChangeController.stream;
-  final _statusChangeController = StreamController<void>.broadcast();
-
-  void notifyListeners() {
-    if (!_statusChangeController.isClosed) _statusChangeController.add(null);
-  }
-
-  void dispose() {
-    _stdoutSubscription?.cancel();
-    _stderrSubscription?.cancel();
-    _statusChangeController.close();
+  bool kill() {
+    if (_process != null) {
+      _process!.kill();
+      return true;
+    }
+    return false;
   }
 }
