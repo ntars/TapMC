@@ -41,6 +41,7 @@ abstract final class Methods {
 
   // player
   static const String playerJoin = 'player.join';
+  static const String playerLoginOffline = 'player.loginOffline';
   static const String playerMove = 'player.move';
 
   // 实例与整合包管理（P2 新增）

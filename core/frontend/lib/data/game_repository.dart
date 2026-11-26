@@ -41,7 +41,7 @@ class GameRepository {
     return WorldSnapshot.fromJson(result);
   }
 
-  /// 并列出生效的模组。
+  /// 并列生效的模组。
   Future<List<ModInfo>> mods() async {
     final result = await _rpc.call<List<dynamic>>(Methods.systemMods);
     return result
@@ -53,6 +53,15 @@ class GameRepository {
   /// 加入世界。返回服务端分配的玩家状态。
   Future<PlayerState> join() async {
     final result = await _rpc.call<Map<String, dynamic>>(Methods.playerJoin);
+    return PlayerState.fromJson(result);
+  }
+
+  /// 离线加入世界（指定玩家名）。返回服务端分配的玩家状态。
+  Future<PlayerState> loginOffline(String name) async {
+    final result = await _rpc.call<Map<String, dynamic>>(
+      Methods.playerLoginOffline,
+      params: {'name': name},
+    );
     return PlayerState.fromJson(result);
   }
 

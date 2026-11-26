@@ -2,6 +2,9 @@
 
 # Use system gradle if available
 if [ -f "/opt/homebrew/Cellar/gradle/9.9.2/bin/gradle" ]; then
+    # 配置 Java cacerts 和允许不安全协议
+    export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home"
+    export GRADLE_OPTS="-Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
     exec /opt/homebrew/Cellar/gradle/9.9.2/bin/gradle "$@"
 else
     echo "Gradle not found at expected location"

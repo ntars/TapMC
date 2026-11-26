@@ -10,11 +10,15 @@ include("mod")
 include("core")
 include("server")
 
-// 使用国内镜像源解决 Gradle SSL 问题
+// 使用阿里云镜像解决 Gradle SSL 问题
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     
     repositories {
+        maven {
+            url = uri("https://maven.aliyun.com/repository/public")
+            // 允许不安全协议（如果需要）
+        }
         mavenCentral()
     }
 }

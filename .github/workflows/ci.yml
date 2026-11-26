@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  analyze-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: flutter-actions/setup@v1
+        with:
+          flutter-version: '3.50.0'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Analyze
+        run: flutter analyze
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: flutter-actions/setup@v1
+        with:
+          flutter-version: '3.50.0'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Run tests
+        env:
+          TAPMC_E2E: 1
+        run: flutter test
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      
+      - name: Build backend
+        run: ./gradlew build
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: flutter-actions/setup@v1
+        with:
+          flutter-version: '3.50.0'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Build web
+        run: flutter build web --release
