@@ -19,7 +19,7 @@
 
 **一句话定位**：一个技术栈只有两部分的多人沙盒游戏骨架——Flutter 做全部前端，Java 做全部后端，中间只隔一份可肉眼调试的协议。
 
-**仓库描述**：`可模组化的多人沙盒游戏骨架：Flutter 七端前端 + Java 服务端，JSON-RPC 2.0 over WebSocket | A moddable multiplayer sandbox game skeleton: Flutter front end, Java server, JSON-RPC 2.0 over WebSocket.`
+**仓库描述**：`可模组化的多人沙盒游戏骨架：Flutter 七端前端 + Java 服务端，只靠 JSON-RPC 2.0 耦合 | A moddable multiplayer sandbox game skeleton: Flutter front end and Java server over JSON-RPC 2.0.`
 
 **话题标签**（20 个，仅英文）：`sandbox-game`、`voxel`、`multiplayer`、`multiplayer-game`、`game-server`、`game-engine`、`modding`、`mod-loader`、`plugin-system`、`flutter`、`dart`、`java`、`json-rpc`、`websocket`、`cross-platform`、`desktop-game`、`mobile-game`、`harmonyos`、`gradle`、`open-source`
 
